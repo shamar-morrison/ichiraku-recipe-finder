@@ -447,7 +447,7 @@ require('regenerator-runtime/runtime');
 const loadingGif = require('url:../img/loading.gif');
 const recipeContainer = document.querySelector('.recipe');
 window.onhashchange = function (event) {
-  console.debug('event', event.newURL);
+  console.debug('event', event);
 };
 const timeout = function (s) {
   return new Promise(function (_, reject) {

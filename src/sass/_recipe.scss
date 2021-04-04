@@ -1,0 +1,177 @@
+.recipe {
+	background-color: $color-grey-light-1;
+
+	///////////
+	// FIGURE
+	&__fig {
+		height: 32rem;
+		position: relative;
+		// transform: scale(1.04) translateY(-1px);
+		transform-origin: top;
+
+		&::before {
+			content: '';
+			display: block;
+			height: 100%;
+			width: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+			background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.8914916308320203) 93%);
+			// opacity: 0.6;
+		}
+	}
+
+	&__img {
+		width: 100%;
+		display: block;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&__title {
+		font-family: 'DM Serif Display', serif;
+		position: absolute;
+		bottom: 18px;
+		left: 25%;
+		// transform: translate(-50%, 20%) skewY(-6deg);
+		color: #fff;
+		font-weight: 700;
+		font-size: 4.25rem;
+		text-transform: capitalize;
+		width: 50%;
+		line-height: 42px;
+		text-align: center;
+
+		span {
+			-webkit-box-decoration-break: clone;
+			box-decoration-break: clone;
+			padding: 1.3rem 2rem;
+			// background-image: linear-gradient(to right bottom, $color-grad-1, $color-grad-2);
+		}
+
+		@media only screen and (max-width: $bp-medium) {
+			width: 70%;
+		}
+	}
+
+	&__btn {
+		background-image: $gradient-2;
+	}
+
+	///////////
+	// DETAILS
+	&__details {
+		display: flex;
+		align-items: center;
+		padding: 2.5rem 8rem 3.5rem 8rem;
+	}
+
+	&__info {
+		font-size: 1.65rem;
+		text-transform: uppercase;
+		display: flex;
+		align-items: center;
+
+		&:not(:last-child) {
+			margin-right: 4.5rem;
+		}
+	}
+
+	&__info-icon {
+		// height: 2.35rem;
+		// width: 2.35rem;
+		font-size: 2rem;
+		color: $color-primary;
+		margin-right: 1.15rem;
+	}
+
+	&__info-data {
+		margin-right: 0.5rem;
+		font-weight: 700;
+	}
+
+	&__info-buttons {
+		display: flex;
+		margin-left: 1.6rem;
+		transform: translateY(-1px);
+	}
+
+	&__user-generated {
+		background-color: darken($color-grey-light-2, 2%);
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 4rem;
+		width: 4rem;
+		border-radius: 10rem;
+
+		margin-left: auto;
+		margin-right: 1.75rem;
+
+		i {
+			text-align: center;
+			color: $color-primary;
+			font-size: 1.35rem;
+		}
+	}
+
+	///////////
+	// INGREDIENTS
+	&__ingredients {
+		padding: 5rem 8rem;
+		font-size: 1.6rem;
+		line-height: 1.4;
+		background-color: $color-grey-light-2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	&__ingredient-list {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2.5rem 3rem;
+		list-style: none;
+	}
+
+	&__ingredient {
+		display: flex;
+		// line-height: 23px;
+	}
+
+	&__icon {
+		font-size: 1.7rem;
+		color: $color-primary;
+		margin-right: 1.1rem;
+		flex: 0 0 auto;
+		margin-top: 6px;
+	}
+
+	&__quantity {
+		margin-right: 0.5rem;
+		flex: 0 0 auto;
+	}
+
+	///////////
+	// DIRECTIONS
+	&__directions {
+		padding: 5rem 10rem;
+		padding-bottom: 5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	&__directions-text {
+		font-size: 1.7rem;
+		text-align: center;
+		margin-bottom: 3.5rem;
+		color: $color-grey-dark-2;
+	}
+
+	&__publisher {
+		font-weight: 700;
+	}
+}
