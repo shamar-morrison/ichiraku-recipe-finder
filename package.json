@@ -1,0 +1,21 @@
+{
+	"name": "ichiraku",
+	"version": "1.0.0",
+	"description": "A recipe finder - search over 1,000,000 recipes",
+	"main": "index.html",
+	"scripts": {
+		"dev": "parcel index.html",
+		"build": "parcel build index.html"
+	},
+	"keywords": [],
+	"author": "Shamar Morrison",
+	"license": "ISC",
+	"devDependencies": {
+		"@parcel/transformer-sass": "^2.0.0-beta.2",
+		"parcel": "^2.0.0-beta.2"
+	},
+	"dependencies": {
+		"core-js": "^3.10.0",
+		"regenerator-runtime": "^0.13.7"
+	}
+}
