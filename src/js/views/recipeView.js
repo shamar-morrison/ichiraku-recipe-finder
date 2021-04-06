@@ -102,6 +102,11 @@ class RecipeView {
          </div> `;
 	}
 
+	addHandlerRender(handler) {
+		// event listeners
+		['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+	}
+
 	_generateMarkupIngredient(ingredient) {
 		return `
         <li class="recipe__ingredient">
