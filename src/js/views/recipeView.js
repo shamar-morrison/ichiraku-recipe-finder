@@ -28,7 +28,7 @@ class RecipeView {
 		<div class="spinner">
           <img src="${loadingGif}" alt="loading..." srcset="${loadingGif}" class="loading-gif">
         </div> `;
-		this._parentElement.innerHTML = '';
+		this._clear();
 		this._parentElement.insertAdjacentHTML('afterbegin', spinner);
 	}
 
@@ -105,6 +105,18 @@ class RecipeView {
 	addHandlerRender(handler) {
 		// event listeners
 		['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+	}
+
+	renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
+		const errorMsg = `
+        <div class="error">
+            <div>
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${message}</p>
+            </div>
+        </div> `;
+		this._clear();
+		this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
 	}
 
 	_generateMarkupIngredient(ingredient) {

@@ -13,6 +13,9 @@ export const loadRecipe = async function (recipeID) {
 		const { recipe } = data.data;
 		state.recipe = recipe;
 	} catch (error) {
-		console.error(error.message);
+		throw Error(error);
+		// console.error(error.message);
 	}
 };
+
+export const loadSearchResults = async query => {};

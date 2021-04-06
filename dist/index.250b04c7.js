@@ -468,6 +468,7 @@ const controlRecipes = async () => {
     // render recipe
     _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
   } catch (err) {
+    _viewsRecipeViewJsDefault.default.renderErrorMsg();
     console.error(err.message);
   }
 };
@@ -12440,6 +12441,9 @@ _parcelHelpers.export(exports, "state", function () {
 _parcelHelpers.export(exports, "loadRecipe", function () {
   return loadRecipe;
 });
+_parcelHelpers.export(exports, "loadSearchResults", function () {
+  return loadSearchResults;
+});
 var _configJs = require('./config.js');
 var _helpersJs = require('./helpers.js');
 const state = {
@@ -12453,9 +12457,10 @@ const loadRecipe = async function (recipeID) {
     const {recipe} = data.data;
     state.recipe = recipe;
   } catch (error) {
-    console.error(error.message);
+    throw Error(error);
   }
 };
+const loadSearchResults = async query => {};
 
 },{"./config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./helpers.js":"581KF"}],"6pr2F":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
@@ -12526,7 +12531,7 @@ class RecipeView {
 		<div class="spinner">
           <img src="${loadingGif}" alt="loading..." srcset="${loadingGif}" class="loading-gif">
         </div> `;
-    this._parentElement.innerHTML = '';
+    this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', spinner);
   }
   /**
@@ -12601,6 +12606,17 @@ class RecipeView {
   addHandlerRender(handler) {
     // event listeners
     ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+  }
+  renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
+    const errorMsg = `
+        <div class="error">
+            <div>
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${message}</p>
+            </div>
+        </div> `;
+    this._clear();
+    this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
   }
   _generateMarkupIngredient(ingredient) {
     return `

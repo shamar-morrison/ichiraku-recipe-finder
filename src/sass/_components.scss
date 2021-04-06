@@ -212,16 +212,19 @@
 	padding: 5rem 4rem;
 
 	display: flex;
-	svg {
-		height: 3rem;
-		width: 3rem;
-		fill: $color-primary;
-		transform: translateY(-0.3rem);
+
+	i {
+		display: block;
+		text-align: center;
+		font-size: 2.8rem;
+		color: inherit;
+		margin-bottom: 6px;
 	}
 
 	p {
 		margin-left: 1.5rem;
 		font-size: 1.8rem;
+		text-align: center;
 		line-height: 1.5;
 		font-weight: 600;
 	}

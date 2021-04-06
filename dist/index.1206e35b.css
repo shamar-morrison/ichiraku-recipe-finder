@@ -228,17 +228,19 @@ body {
   padding: 5rem 4rem;
   display: flex;
 }
-.message svg,
-.error svg {
-  height: 3rem;
-  width: 3rem;
-  fill: #fa9140;
-  transform: translateY(-0.3rem);
+.message i,
+.error i {
+  display: block;
+  text-align: center;
+  font-size: 2.8rem;
+  color: inherit;
+  margin-bottom: 6px;
 }
 .message p,
 .error p {
   margin-left: 1.5rem;
   font-size: 1.8rem;
+  text-align: center;
   line-height: 1.5;
   font-weight: 600;
 }
@@ -252,7 +254,7 @@ body {
 }
 .header__logo {
   margin-left: 4rem;
-  height: 6.4rem;
+  height: 6rem;
   display: block;
 }
 
