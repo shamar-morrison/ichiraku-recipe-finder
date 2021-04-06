@@ -1,4 +1,5 @@
-const loadingGif = require('url:../img/loading.gif');
+const Fraction = require('fractional').Fraction;
+const loadingGif = require('url:../../img/loading.gif');
 
 class RecipeView {
 	_parentElement = document.querySelector('.recipe');
@@ -31,9 +32,9 @@ class RecipeView {
 		this._parentElement.insertAdjacentHTML('afterbegin', spinner);
 	}
 
-    /**
-     * Generate HTML markup for the recipe view
-     */
+	/**
+	 * Generate HTML markup for the recipe view
+	 */
 	_generateMarkup() {
 		return `
 			<figure class="recipe__fig">
@@ -78,22 +79,7 @@ class RecipeView {
                     <h2 class="heading--2">Recipe ingredients</h2>
                     <ul class="recipe__ingredient-list">
 
-                    ${this._data.ingredients
-						.map(ingredient => {
-							return `
-                            <li class="recipe__ingredient">
-                                <i class="fas fa-check-circle recipe__icon"></i>
-                                <div class="recipe__quantity"><strong>${
-									ingredient.quantity === null ? '' : ingredient.quantity
-								}</strong></div>
-                                <div class="recipe__description">
-                                    <span class="recipe__unit">${ingredient.unit}</span>
-                                    ${ingredient.description}
-                                </div>
-                            </li>
-                        `;
-						})
-						.join('')}
+                    ${this._data.ingredients.map(ingredient => this._generateMarkupIngredient(ingredient)).join('')}
 
                     </ul>
                 </div>
@@ -114,6 +100,20 @@ class RecipeView {
                 </div>
             </div>
          </div> `;
+	}
+
+	_generateMarkupIngredient(ingredient) {
+		return `
+        <li class="recipe__ingredient">
+            <i class="fas fa-check-circle recipe__icon"></i>
+            <div class="recipe__quantity"><strong>${
+				ingredient.quantity === null ? '' : new Fraction(ingredient.quantity).toString()
+			}</strong></div>
+            <div class="recipe__description">
+                <span class="recipe__unit">${ingredient.unit}</span>
+                ${ingredient.description}
+            </div>
+        </li> `;
 	}
 }
 

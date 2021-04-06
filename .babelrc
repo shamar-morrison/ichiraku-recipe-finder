@@ -1,0 +1,4 @@
+// for class properties
+{
+	"plugins": ["transform-class-properties"]
+}
