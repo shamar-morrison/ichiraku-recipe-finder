@@ -408,7 +408,6 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background-image: linear-gradient(to right bottom, #fdbfc2, #fee6d1);
   opacity: 0.4;
 }
 .preview__fig img {
@@ -437,13 +436,12 @@ body {
   overflow: hidden;
 }
 .preview__publisher {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   color: #3f3458;
-  text-transform: uppercase;
+  text-transform: capitalize;
   font-weight: 600;
 }
 .preview__user-generated {
-  background-color: #fedbdd;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,10 +451,11 @@ body {
   margin-left: auto;
   margin-right: 1.75rem;
 }
-.preview__user-generated svg {
-  height: 1.2rem;
-  width: 1.2rem;
-  fill: #fa9140;
+.preview__user-generated i.fa-user {
+  font-size: 1.75rem;
+  color: #fa9140;
+  margin-top: -20px;
+  margin-left: 12px;
 }
 
 .search-results {
@@ -516,7 +515,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.8914916308) 93%);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 25%, rgba(0, 0, 0, 0.7766456925) 93%);
 }
 .recipe__img {
   width: 100%;

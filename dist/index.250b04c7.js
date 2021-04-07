@@ -448,6 +448,8 @@ var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 var _viewsRecipeViewJsDefault = _parcelHelpers.interopDefault(_viewsRecipeViewJs);
 var _viewsSearchBarViewJs = require('./views/searchBarView.js');
 var _viewsSearchBarViewJsDefault = _parcelHelpers.interopDefault(_viewsSearchBarViewJs);
+var _viewsSearchResultsViewJs = require('./views/searchResultsView.js');
+var _viewsSearchResultsViewJsDefault = _parcelHelpers.interopDefault(_viewsSearchResultsViewJs);
 require('core-js/stable');
 require('regenerator-runtime/runtime');
 const recipeContainer = document.querySelector('.recipe');
@@ -468,7 +470,7 @@ const controlRecipes = async () => {
     await _modelJs.loadRecipe(recipeID);
     const {recipe} = _modelJs.state;
     // render recipe
-    _viewsRecipeViewJsDefault.default.renderRecipe(_modelJs.state.recipe);
+    _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
   } catch (err) {
     _viewsRecipeViewJsDefault.default.renderErrorMsg();
     console.error(err.message);
@@ -478,7 +480,11 @@ const controlSearchResults = async () => {
   try {
     const searchQuery = _viewsSearchBarViewJsDefault.default._getSearchQuery();
     if (!searchQuery) return;
+    // render spinner
+    _viewsSearchResultsViewJsDefault.default.renderSpinner();
     await _modelJs.loadSearchResults(searchQuery);
+    // render results
+    _viewsSearchResultsViewJsDefault.default.render(_modelJs.state.search.results);
   } catch (error) {
     console.error(error);
   }
@@ -492,7 +498,7 @@ const init = () => {
 };
 init();
 
-},{"core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj"}],"1PFvP":[function(require,module,exports) {
+},{"core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj","./views/searchResultsView.js":"37EIh"}],"1PFvP":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');
@@ -12530,119 +12536,86 @@ const getJSON = async function (url) {
 },{"@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./config.js":"6pr2F"}],"9e6b9":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
+var _ViewJs = require('./View.js');
+var _ViewJsDefault = _parcelHelpers.interopDefault(_ViewJs);
 const Fraction = require('fractional').Fraction;
-const loadingGif = require('url:../../img/loading.gif');
-class RecipeView {
-  constructor() {
-    this._parentElement = document.querySelector('.recipe');
-  }
-  /**
-  * Render the recipe
-  */
-  renderRecipe(data) {
-    this._recipeData = data;
-    const markupHTML = this._generateMarkup();
-    // insert recipe into DOM
-    this._clear();
-    this._parentElement.insertAdjacentHTML('beforeend', markupHTML);
-  }
-  _clear() {
-    this._parentElement.innerHTML = '';
-  }
-  /**
-  * Render the loading GIF
-  */
-  renderSpinner() {
-    const spinner = `
-		<div class="spinner">
-          <img src="${loadingGif}" alt="loading..." srcset="${loadingGif}" class="loading-gif">
-        </div> `;
-    this._clear();
-    this._parentElement.insertAdjacentHTML('afterbegin', spinner);
+class RecipeView extends _ViewJsDefault.default {
+  constructor(...args) {
+    var _temp;
+    return (_temp = super(...args), this._parentElement = document.querySelector('.recipe'), _temp);
   }
   /**
   * Generate HTML markup for the recipe view
   */
   _generateMarkup() {
     return `
-			<figure class="recipe__fig">
-                <img src="${this._recipeData.image_url}" alt="${this._recipeData.title}" class="recipe__img" />
-                <h1 class="recipe__title">
-                    <span>${this._recipeData.title}</span>
-                </h1>
-			</figure>
+        <figure class="recipe__fig">
+            <img src="${this._data.image_url}" alt="${this._data.title}" class="recipe__img" />
+            <h1 class="recipe__title">
+                <span>${this._data.title}</span>
+            </h1>
+        </figure>
 
-            <div class="recipe__details">
-                    <div class="recipe__info">
-                        <i class="fas fa-clock recipe__info-icon"></i>
+        <div class="recipe__details">
+                <div class="recipe__info">
+                    <i class="fas fa-clock recipe__info-icon"></i>
 
-                        <span class="recipe__info-data recipe__info-data--minutes">${this._recipeData.cooking_time}</span>
-                        <span class="recipe__info-text">minutes</span>
+                    <span class="recipe__info-data recipe__info-data--minutes">${this._data.cooking_time}</span>
+                    <span class="recipe__info-text">minutes</span>
+                </div>
+                <div class="recipe__info">
+                    <i class="fas fa-user-friends recipe__info-icon"></i>
+
+                    <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
+                    <span class="recipe__info-text">servings</span>
+
+                    <div class="recipe__info-buttons">
+                        <button class="btn--tiny btn--increase-servings">
+                            <i class="fas fa-minus-circle"></i>
+                        </button>
+                        <button class="btn--tiny btn--increase-servings">
+                            <i class="fas fa-plus-circle"></i>
+                        </button>
                     </div>
-                    <div class="recipe__info">
-                        <i class="fas fa-user-friends recipe__info-icon"></i>
-
-                        <span class="recipe__info-data recipe__info-data--people">${this._recipeData.servings}</span>
-                        <span class="recipe__info-text">servings</span>
-
-                        <div class="recipe__info-buttons">
-                            <button class="btn--tiny btn--increase-servings">
-                                <i class="fas fa-minus-circle"></i>
-                            </button>
-                            <button class="btn--tiny btn--increase-servings">
-                                <i class="fas fa-plus-circle"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="recipe__user-generated">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <button class="btn--round">
-                        <i class="fas fa-bookmark"></i>
-                    </button>
                 </div>
 
-                <div class="recipe__ingredients">
-                    <h2 class="heading--2">Recipe ingredients</h2>
-                    <ul class="recipe__ingredient-list">
-
-                    ${this._recipeData.ingredients.map(ingredient => this._generateIngredientMarkup(ingredient)).join('')}
-
-                    </ul>
+                <div class="recipe__user-generated">
+                    <i class="fas fa-user"></i>
                 </div>
-
-                <div class="recipe__directions">
-                    <h2 class="heading--2">How to cook it</h2>
-                    <p class="recipe__directions-text">
-                        This recipe was carefully designed and tested by
-                        <span class="recipe__publisher">${this._recipeData.publisher}</span>. Please check out directions at their website.
-                    </p>
-                    <a
-                        class="btn--small recipe__btn"
-                        href="${this._recipeData.source_url}"
-                        target="_blank">
-                        <span>Directions</span>
-                        <i class="fas fa-arrow-circle-right search__icon"></i>
-                    </a>
-                </div>
+                <button class="btn--round">
+                    <i class="fas fa-bookmark"></i>
+                </button>
             </div>
-         </div> `;
+
+            <div class="recipe__ingredients">
+                <h2 class="heading--2">Recipe ingredients</h2>
+                <ul class="recipe__ingredient-list">
+
+                ${this._data.ingredients.map(ingredient => this._generateIngredientMarkup(ingredient)).join('')}
+
+                </ul>
+            </div>
+
+            <div class="recipe__directions">
+                <h2 class="heading--2">How to cook it</h2>
+                <p class="recipe__directions-text">
+                    This recipe was carefully designed and tested by
+                    <span class="recipe__publisher">${this._data.publisher}</span>. Please check out directions at their website.
+                </p>
+                <a
+                    class="btn--small recipe__btn"
+                    href="${this._data.source_url}"
+                    target="_blank">
+                    <span>Directions</span>
+                    <i class="fas fa-arrow-circle-right search__icon"></i>
+                </a>
+            </div>
+        </div>
+        </div> `;
   }
   addEventHandler(handler) {
     // event listeners
     ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
-  }
-  renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
-    const errorMsg = `
-        <div class="error">
-            <div>
-                <i class="fas fa-exclamation-circle"></i>
-                <p>${message}</p>
-            </div>
-        </div> `;
-    this._clear();
-    this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
   }
   _generateIngredientMarkup(ingredient) {
     return `
@@ -12658,7 +12631,7 @@ class RecipeView {
 }
 exports.default = new RecipeView();
 
-},{"fractional":"5jzJt","url:../../img/loading.gif":"7n5qy","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"5jzJt":[function(require,module,exports) {
+},{"fractional":"5jzJt","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./View.js":"48jhP"}],"5jzJt":[function(require,module,exports) {
 /*
 fraction.js
 A Javascript fraction library.
@@ -13027,7 +13000,52 @@ Fraction.primeFactors = function(n)
 
 module.exports.Fraction = Fraction
 
-},{}],"7n5qy":[function(require,module,exports) {
+},{}],"48jhP":[function(require,module,exports) {
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+const loadingGif = require('url:../../img/loading.gif');
+class View {
+  /**
+  * Render the recipe/search results
+  */
+  render(data) {
+    this._data = data;
+    const markupHTML = this._generateMarkup();
+    this._clear();
+    this._parentElement.insertAdjacentHTML('beforeend', markupHTML);
+  }
+  _clear() {
+    this._parentElement.innerHTML = '';
+  }
+  /**
+  * Render the loading GIF
+  */
+  renderSpinner() {
+    const spinner = `
+		<div class="spinner">
+          <img src="${loadingGif}" alt="loading..." srcset="${loadingGif}" class="loading-gif">
+        </div> `;
+    this._clear();
+    this._parentElement.insertAdjacentHTML('afterbegin', spinner);
+  }
+  /**
+  * Render an error message
+  */
+  renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
+    const errorMsg = `
+        <div class="error">
+            <div>
+              <i class="fas fa-exclamation-circle"></i>
+              <p>${message}</p>
+            </div>
+        </div> `;
+    this._clear();
+    this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
+  }
+}
+exports.default = View;
+
+},{"url:../../img/loading.gif":"7n5qy","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"7n5qy":[function(require,module,exports) {
 module.exports = require('./bundle-url').getBundleURL() + "loading.231fcd1f.gif"
 },{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
 "use strict";
@@ -13094,6 +13112,41 @@ class SearchBarView {
 }
 exports.default = new SearchBarView();
 
-},{"@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}]},["7BONy","3miIZ"], "3miIZ", "parcelRequirea0c0")
+},{"@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"37EIh":[function(require,module,exports) {
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+var _ViewJs = require('./View.js');
+var _ViewJsDefault = _parcelHelpers.interopDefault(_ViewJs);
+class SearchResultsView extends _ViewJsDefault.default {
+  constructor(...args) {
+    var _temp;
+    return (_temp = super(...args), this._parentElement = document.querySelector('.results'), _temp);
+  }
+  _generateMarkup() {
+    return this._data.map(obj => this._generatePreviewMarkup(obj)).join('');
+  }
+  _generatePreviewMarkup(data) {
+    return `
+      <li class="preview">
+              <a class="preview__link preview__link--active" href="${data.id}">
+                <figure class="preview__fig">
+                  <img src="${data.image_url}" alt="${data.title}" />
+                </figure>
+                  <div class="preview__data">
+                    <h4 class="preview__title">${data.title}</h4>
+                    <p class="preview__publisher">${data.publisher}</p>
+                    <div class="preview__user-generated">
+                      <i class="fas fa-user"></i>
+                    </div>
+                  </div>
+              </a>
+        </li>
+	  `;
+  }
+  renderSearchResults() {}
+}
+exports.default = new SearchResultsView();
+
+},{"./View.js":"48jhP","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}]},["7BONy","3miIZ"], "3miIZ", "parcelRequirea0c0")
 
 //# sourceMappingURL=index.250b04c7.js.map
