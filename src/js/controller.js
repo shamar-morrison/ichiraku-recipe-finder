@@ -1,5 +1,7 @@
 import * as model from './model.js';
 import RecipeView from './views/recipeView.js';
+import SearchBarView from './views/searchBarView.js';
+
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
@@ -27,10 +29,20 @@ const controlRecipes = async () => {
 		const { recipe } = model.state;
 
 		// render recipe
-		RecipeView.render(model.state.recipe);
+		RecipeView.renderRecipe(model.state.recipe);
 	} catch (err) {
 		RecipeView.renderErrorMsg();
 		console.error(err.message);
+	}
+};
+
+const controlSearchResults = async () => {
+	try {
+		const searchQuery = SearchBarView._getSearchQuery();
+		if (!searchQuery) return;
+		await model.loadSearchResults(searchQuery);
+	} catch (error) {
+		console.error(error);
 	}
 };
 
@@ -38,7 +50,8 @@ const controlRecipes = async () => {
  * Initialise App
  */
 const init = () => {
-	RecipeView.addHandlerRender(controlRecipes);
+	RecipeView.addEventHandler(controlRecipes);
+	SearchBarView.addEventHandler(controlSearchResults);
 };
 
 init();

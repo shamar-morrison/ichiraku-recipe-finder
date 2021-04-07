@@ -3,17 +3,17 @@ const loadingGif = require('url:../../img/loading.gif');
 
 class RecipeView {
 	_parentElement = document.querySelector('.recipe');
-	_data;
+	_recipeData;
 
 	/**
 	 * Render the recipe
 	 */
-	render(data) {
-		this._data = data;
-		const markup = this._generateMarkup();
+	renderRecipe(data) {
+		this._recipeData = data;
+		const markupHTML = this._generateMarkup();
 		// insert recipe into DOM
 		this._clear();
-		this._parentElement.insertAdjacentHTML('beforeend', markup);
+		this._parentElement.insertAdjacentHTML('beforeend', markupHTML);
 	}
 
 	_clear() {
@@ -38,9 +38,9 @@ class RecipeView {
 	_generateMarkup() {
 		return `
 			<figure class="recipe__fig">
-                <img src="${this._data.image_url}" alt="${this._data.title}" class="recipe__img" />
+                <img src="${this._recipeData.image_url}" alt="${this._recipeData.title}" class="recipe__img" />
                 <h1 class="recipe__title">
-                    <span>${this._data.title}</span>
+                    <span>${this._recipeData.title}</span>
                 </h1>
 			</figure>
 
@@ -48,13 +48,13 @@ class RecipeView {
                     <div class="recipe__info">
                         <i class="fas fa-clock recipe__info-icon"></i>
 
-                        <span class="recipe__info-data recipe__info-data--minutes">${this._data.cooking_time}</span>
+                        <span class="recipe__info-data recipe__info-data--minutes">${this._recipeData.cooking_time}</span>
                         <span class="recipe__info-text">minutes</span>
                     </div>
                     <div class="recipe__info">
                         <i class="fas fa-user-friends recipe__info-icon"></i>
 
-                        <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
+                        <span class="recipe__info-data recipe__info-data--people">${this._recipeData.servings}</span>
                         <span class="recipe__info-text">servings</span>
 
                         <div class="recipe__info-buttons">
@@ -79,7 +79,7 @@ class RecipeView {
                     <h2 class="heading--2">Recipe ingredients</h2>
                     <ul class="recipe__ingredient-list">
 
-                    ${this._data.ingredients.map(ingredient => this._generateMarkupIngredient(ingredient)).join('')}
+                    ${this._recipeData.ingredients.map(ingredient => this._generateIngredientMarkup(ingredient)).join('')}
 
                     </ul>
                 </div>
@@ -88,11 +88,11 @@ class RecipeView {
                     <h2 class="heading--2">How to cook it</h2>
                     <p class="recipe__directions-text">
                         This recipe was carefully designed and tested by
-                        <span class="recipe__publisher">${this._data.publisher}</span>. Please check out directions at their website.
+                        <span class="recipe__publisher">${this._recipeData.publisher}</span>. Please check out directions at their website.
                     </p>
                     <a
                         class="btn--small recipe__btn"
-                        href="${this._data.source_url}"
+                        href="${this._recipeData.source_url}"
                         target="_blank">
                         <span>Directions</span>
                         <i class="fas fa-arrow-circle-right search__icon"></i>
@@ -102,7 +102,7 @@ class RecipeView {
          </div> `;
 	}
 
-	addHandlerRender(handler) {
+	addEventHandler(handler) {
 		// event listeners
 		['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
 	}
@@ -119,7 +119,7 @@ class RecipeView {
 		this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
 	}
 
-	_generateMarkupIngredient(ingredient) {
+	_generateIngredientMarkup(ingredient) {
 		return `
         <li class="recipe__ingredient">
             <i class="fas fa-check-circle recipe__icon"></i>

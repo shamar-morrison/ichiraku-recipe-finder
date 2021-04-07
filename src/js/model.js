@@ -3,13 +3,16 @@ import { getJSON } from './helpers.js';
 
 export const state = {
 	recipe: {},
-	search: {},
+	search: {
+		query: '',
+		results: [],
+	},
 	bookmarks: [],
 };
 
 export const loadRecipe = async function (recipeID) {
 	try {
-		const data = await getJSON(`${config.API_URL}${recipeID}`);
+		const data = await getJSON(`${config.API_URL}/${recipeID}`);
 		const { recipe } = data.data;
 		state.recipe = recipe;
 	} catch (error) {
@@ -18,4 +21,15 @@ export const loadRecipe = async function (recipeID) {
 	}
 };
 
-export const loadSearchResults = async query => {};
+export const loadSearchResults = async searchQuery => {
+	try {
+		const data = await getJSON(`${config.API_URL}?search=${searchQuery}`);
+		const searchResults = data.data.recipes;
+		// set state
+		state.search.results = searchResults;
+		state.search.query = searchQuery;
+		console.debug('results', searchResults);
+	} catch (error) {
+		throw Error(error);
+	}
+};

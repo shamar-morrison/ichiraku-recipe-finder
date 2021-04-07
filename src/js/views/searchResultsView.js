@@ -1,0 +1,3 @@
+class SearchResultsView {
+	renderSearchResults() {}
+}

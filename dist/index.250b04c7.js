@@ -446,6 +446,8 @@ var _modelJs = require('./model.js');
 var _viewsRecipeViewJs = require('./views/recipeView.js');
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 var _viewsRecipeViewJsDefault = _parcelHelpers.interopDefault(_viewsRecipeViewJs);
+var _viewsSearchBarViewJs = require('./views/searchBarView.js');
+var _viewsSearchBarViewJsDefault = _parcelHelpers.interopDefault(_viewsSearchBarViewJs);
 require('core-js/stable');
 require('regenerator-runtime/runtime');
 const recipeContainer = document.querySelector('.recipe');
@@ -466,21 +468,31 @@ const controlRecipes = async () => {
     await _modelJs.loadRecipe(recipeID);
     const {recipe} = _modelJs.state;
     // render recipe
-    _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+    _viewsRecipeViewJsDefault.default.renderRecipe(_modelJs.state.recipe);
   } catch (err) {
     _viewsRecipeViewJsDefault.default.renderErrorMsg();
     console.error(err.message);
+  }
+};
+const controlSearchResults = async () => {
+  try {
+    const searchQuery = _viewsSearchBarViewJsDefault.default._getSearchQuery();
+    if (!searchQuery) return;
+    await _modelJs.loadSearchResults(searchQuery);
+  } catch (error) {
+    console.error(error);
   }
 };
 /**
 * Initialise App
 */
 const init = () => {
-  _viewsRecipeViewJsDefault.default.addHandlerRender(controlRecipes);
+  _viewsRecipeViewJsDefault.default.addEventHandler(controlRecipes);
+  _viewsSearchBarViewJsDefault.default.addEventHandler(controlSearchResults);
 };
 init();
 
-},{"core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./model.js":"1hp6y","./views/recipeView.js":"9e6b9"}],"1PFvP":[function(require,module,exports) {
+},{"core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj"}],"1PFvP":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');
@@ -12448,19 +12460,33 @@ var _configJs = require('./config.js');
 var _helpersJs = require('./helpers.js');
 const state = {
   recipe: {},
-  search: {},
+  search: {
+    query: '',
+    results: []
+  },
   bookmarks: []
 };
 const loadRecipe = async function (recipeID) {
   try {
-    const data = await _helpersJs.getJSON(`${_configJs.API_URL}${recipeID}`);
+    const data = await _helpersJs.getJSON(`${_configJs.API_URL}/${recipeID}`);
     const {recipe} = data.data;
     state.recipe = recipe;
   } catch (error) {
     throw Error(error);
   }
 };
-const loadSearchResults = async query => {};
+const loadSearchResults = async searchQuery => {
+  try {
+    const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${searchQuery}`);
+    const searchResults = data.data.recipes;
+    // set state
+    state.search.results = searchResults;
+    state.search.query = searchQuery;
+    console.debug('results', searchResults);
+  } catch (error) {
+    throw Error(error);
+  }
+};
 
 },{"./config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./helpers.js":"581KF"}],"6pr2F":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
@@ -12471,7 +12497,7 @@ _parcelHelpers.export(exports, "API_URL", function () {
 _parcelHelpers.export(exports, "TIMEOUT_SEC", function () {
   return TIMEOUT_SEC;
 });
-const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
+const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes';
 const TIMEOUT_SEC = 10;
 
 },{"@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"581KF":[function(require,module,exports) {
@@ -12513,12 +12539,12 @@ class RecipeView {
   /**
   * Render the recipe
   */
-  render(data) {
-    this._data = data;
-    const markup = this._generateMarkup();
+  renderRecipe(data) {
+    this._recipeData = data;
+    const markupHTML = this._generateMarkup();
     // insert recipe into DOM
     this._clear();
-    this._parentElement.insertAdjacentHTML('beforeend', markup);
+    this._parentElement.insertAdjacentHTML('beforeend', markupHTML);
   }
   _clear() {
     this._parentElement.innerHTML = '';
@@ -12540,9 +12566,9 @@ class RecipeView {
   _generateMarkup() {
     return `
 			<figure class="recipe__fig">
-                <img src="${this._data.image_url}" alt="${this._data.title}" class="recipe__img" />
+                <img src="${this._recipeData.image_url}" alt="${this._recipeData.title}" class="recipe__img" />
                 <h1 class="recipe__title">
-                    <span>${this._data.title}</span>
+                    <span>${this._recipeData.title}</span>
                 </h1>
 			</figure>
 
@@ -12550,13 +12576,13 @@ class RecipeView {
                     <div class="recipe__info">
                         <i class="fas fa-clock recipe__info-icon"></i>
 
-                        <span class="recipe__info-data recipe__info-data--minutes">${this._data.cooking_time}</span>
+                        <span class="recipe__info-data recipe__info-data--minutes">${this._recipeData.cooking_time}</span>
                         <span class="recipe__info-text">minutes</span>
                     </div>
                     <div class="recipe__info">
                         <i class="fas fa-user-friends recipe__info-icon"></i>
 
-                        <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
+                        <span class="recipe__info-data recipe__info-data--people">${this._recipeData.servings}</span>
                         <span class="recipe__info-text">servings</span>
 
                         <div class="recipe__info-buttons">
@@ -12581,7 +12607,7 @@ class RecipeView {
                     <h2 class="heading--2">Recipe ingredients</h2>
                     <ul class="recipe__ingredient-list">
 
-                    ${this._data.ingredients.map(ingredient => this._generateMarkupIngredient(ingredient)).join('')}
+                    ${this._recipeData.ingredients.map(ingredient => this._generateIngredientMarkup(ingredient)).join('')}
 
                     </ul>
                 </div>
@@ -12590,11 +12616,11 @@ class RecipeView {
                     <h2 class="heading--2">How to cook it</h2>
                     <p class="recipe__directions-text">
                         This recipe was carefully designed and tested by
-                        <span class="recipe__publisher">${this._data.publisher}</span>. Please check out directions at their website.
+                        <span class="recipe__publisher">${this._recipeData.publisher}</span>. Please check out directions at their website.
                     </p>
                     <a
                         class="btn--small recipe__btn"
-                        href="${this._data.source_url}"
+                        href="${this._recipeData.source_url}"
                         target="_blank">
                         <span>Directions</span>
                         <i class="fas fa-arrow-circle-right search__icon"></i>
@@ -12603,7 +12629,7 @@ class RecipeView {
             </div>
          </div> `;
   }
-  addHandlerRender(handler) {
+  addEventHandler(handler) {
     // event listeners
     ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
   }
@@ -12618,7 +12644,7 @@ class RecipeView {
     this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
   }
-  _generateMarkupIngredient(ingredient) {
+  _generateIngredientMarkup(ingredient) {
     return `
         <li class="recipe__ingredient">
             <i class="fas fa-check-circle recipe__icon"></i>
@@ -13049,6 +13075,25 @@ function getOrigin(url) {
 exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
 exports.getOrigin = getOrigin;
-},{}]},["7BONy","3miIZ"], "3miIZ", "parcelRequirea0c0")
+},{}],"5MFvj":[function(require,module,exports) {
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+class SearchBarView {
+  constructor() {
+    this._parentElement = document.querySelector('.search');
+  }
+  _getSearchQuery() {
+    return this._parentElement.querySelector('.search__field').value;
+  }
+  addEventHandler(handler) {
+    this._parentElement.addEventListener('submit', e => {
+      e.preventDefault();
+      handler();
+    });
+  }
+}
+exports.default = new SearchBarView();
+
+},{"@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}]},["7BONy","3miIZ"], "3miIZ", "parcelRequirea0c0")
 
 //# sourceMappingURL=index.250b04c7.js.map
