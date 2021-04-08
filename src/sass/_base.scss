@@ -12,7 +12,7 @@ $color-grey-dark-2: #3f3458; // Lighter text
 
 $gradient: linear-gradient(279deg, $color-grad-1 32%, $color-grad-2 100%);
 $gradient-2: linear-gradient(319deg, rgba(253, 133, 149, 1) 43%, rgba(254, 198, 165, 1) 100%);
-$box-shadow: rgba(248, 157, 173, 0.6);
+$box-shadow: rgba(253, 184, 197, 0.6);
 
 $bp-large: 78.15em; // 1250px
 $bp-medium: 61.25em; // 980px
@@ -44,7 +44,8 @@ body {
 	font-weight: 400;
 	line-height: 1.6;
 	color: $color-grey-dark-1;
-	background-image: $gradient;
+	// background-image: $gradient;
+	background-color: $color-grey-light-1;
 	background-size: cover;
 	background-repeat: no-repeat;
 	min-height: calc(100vh - 2 * 4vw);

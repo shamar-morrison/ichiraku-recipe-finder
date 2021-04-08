@@ -2,13 +2,13 @@ import View from './View.js';
 const Fraction = require('fractional').Fraction;
 
 class RecipeView extends View {
-  _parentElement = document.querySelector('.recipe');
+	_parentElement = document.querySelector('.recipe');
 
-  /**
-   * Generate HTML markup for the recipe view
-   */
-  _generateMarkup() {
-    return `
+	/**
+	 * Generate HTML markup for the recipe view
+	 */
+	_generateMarkup() {
+		return `
         <figure class="recipe__fig">
             <img src="${this._data.image_url}" alt="${this._data.title}" class="recipe__img" />
             <h1 class="recipe__title">
@@ -40,7 +40,7 @@ class RecipeView extends View {
                 </div>
 
                 <div class="recipe__user-generated">
-                    <i class="fas fa-user"></i>
+                    
                 </div>
                 <button class="btn--round">
                     <i class="fas fa-bookmark"></i>
@@ -72,26 +72,26 @@ class RecipeView extends View {
             </div>
         </div>
         </div> `;
-  }
+	}
 
-  addEventHandler(handler) {
-    // event listeners
-    ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
-  }
+	addEventHandler(handler) {
+		// event listeners
+		['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+	}
 
-  _generateIngredientMarkup(ingredient) {
-    return `
+	_generateIngredientMarkup(ingredient) {
+		return `
         <li class="recipe__ingredient">
             <i class="fas fa-check-circle recipe__icon"></i>
             <div class="recipe__quantity"><strong>${
-              ingredient.quantity === null ? '' : new Fraction(ingredient.quantity).toString()
-            }</strong></div>
+				ingredient.quantity === null ? '' : new Fraction(ingredient.quantity).toString()
+			}</strong></div>
             <div class="recipe__description">
                 <span class="recipe__unit">${ingredient.unit}</span>
                 ${ingredient.description}
             </div>
         </li> `;
-  }
+	}
 }
 
 export default new RecipeView();

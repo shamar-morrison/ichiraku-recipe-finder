@@ -24,7 +24,7 @@ body {
   font-weight: 400;
   line-height: 1.6;
   color: #352d48;
-  background-image: linear-gradient(279deg, #fdbfc2 32%, #fee6d1 100%);
+  background-color: #fff2ee;
   background-size: cover;
   background-repeat: no-repeat;
   min-height: calc(100vh - 2 * 4vw);
@@ -37,7 +37,7 @@ body {
   background-color: rgba(255, 255, 255, 0.959);
   border-radius: 30px;
   overflow: hidden;
-  box-shadow: 17px 1px 78px 6px rgba(248, 157, 173, 0.6);
+  box-shadow: 17px 1px 78px 6px rgba(253, 184, 197, 0.6);
   display: grid;
   grid-template-rows: 10rem minmax(100rem, auto);
   grid-template-columns: 1fr 2fr;
@@ -460,7 +460,6 @@ body {
 
 .search-results {
   border-top-right-radius: 30px;
-  padding: 3rem 0;
   display: flex;
   flex-direction: column;
 }

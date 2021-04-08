@@ -6,6 +6,11 @@ import SearchResultsView from './views/searchResultsView.js';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
+/** Parcel's hot reloading */
+// if (module.hot) {
+// 	module.hot.accept();
+// }
+
 const recipeContainer = document.querySelector('.recipe');
 
 // https://forkify-api.herokuapp.com/v2
@@ -47,9 +52,13 @@ const controlSearchResults = async () => {
 
 		await model.loadSearchResults(searchQuery);
 
+		if (model.state.search.results.length <= 0) {
+			throw Error('No recipes found for that query.');
+		}
 		// render results
 		SearchResultsView.render(model.state.search.results);
 	} catch (error) {
+		SearchResultsView.renderErrorMsg('No recipes found for that query.');
 		console.error(error);
 	}
 };
