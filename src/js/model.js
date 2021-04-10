@@ -6,6 +6,7 @@ export const state = {
 	search: {
 		query: '',
 		results: [],
+		currentPage: 1,
 	},
 	bookmarks: [],
 };
@@ -30,6 +31,14 @@ export const loadSearchResults = async searchQuery => {
 		state.search.query = searchQuery;
 		console.debug('results', searchResults);
 	} catch (error) {
-		throw Error(error);
+		throw error;
 	}
+};
+/** @returns a certain number of results per page */
+export const getSearchResultsPage = (pageNum = state.search.currentPage) => {
+	state.search.currentPage = pageNum;
+	const startIndex = (pageNum - 1) * config.RESULTS_PER_PAGE;
+	const endIndex = pageNum * config.RESULTS_PER_PAGE;
+
+	return state.search.results.slice(startIndex, endIndex);
 };

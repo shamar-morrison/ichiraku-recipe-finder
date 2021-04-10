@@ -4,7 +4,7 @@ export default class View {
 	_data;
 
 	/**
-	 * Render the recipe/search results
+	 * Render the recipe/search results/pagination btns
 	 */
 	render(data) {
 		this._data = data;

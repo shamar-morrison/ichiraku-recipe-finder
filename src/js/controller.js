@@ -2,6 +2,7 @@ import * as model from './model.js';
 import RecipeView from './views/recipeView.js';
 import SearchBarView from './views/searchBarView.js';
 import SearchResultsView from './views/searchResultsView.js';
+import PaginationView from './views/paginationView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -52,13 +53,16 @@ const controlSearchResults = async () => {
 
 		await model.loadSearchResults(searchQuery);
 
+		// if no recipes found
 		if (model.state.search.results.length <= 0) {
 			throw Error('No recipes found for that query.');
 		}
 		// render results
-		SearchResultsView.render(model.state.search.results);
+		SearchResultsView.render(model.getSearchResultsPage());
+		// render pagination buttons
+		PaginationView.render(model.state.search);
 	} catch (error) {
-		SearchResultsView.renderErrorMsg('No recipes found for that query.');
+		SearchResultsView.renderErrorMsg(error.message);
 		console.error(error);
 	}
 };
