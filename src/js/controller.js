@@ -7,7 +7,7 @@ import PaginationView from './views/paginationView.js';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
-/** Parcel's hot reloading */
+// /** Parcel's hot reloading */
 // if (module.hot) {
 // 	module.hot.accept();
 // }
@@ -19,9 +19,7 @@ const recipeContainer = document.querySelector('.recipe');
 
 ///////////////////////////////////////
 
-/**
- * Show the recipe
- */
+/** Show the recipe */
 const controlRecipes = async () => {
 	try {
 		// get recipe ID
@@ -33,16 +31,17 @@ const controlRecipes = async () => {
 
 		// loading recipe
 		await model.loadRecipe(recipeID);
-		const { recipe } = model.state;
 
 		// render recipe
 		RecipeView.render(model.state.recipe);
+		console.debug(model.state.recipe);
 	} catch (err) {
 		RecipeView.renderErrorMsg();
 		console.error(err.message);
 	}
 };
 
+/** Display search results */
 const controlSearchResults = async () => {
 	try {
 		const searchQuery = SearchBarView._getSearchQuery();
@@ -57,8 +56,13 @@ const controlSearchResults = async () => {
 		if (model.state.search.results.length <= 0) {
 			throw Error('No recipes found for that query.');
 		}
+
+		// reset page number on new search
+		model.state.search.currentPage = 1;
+
 		// render results
 		SearchResultsView.render(model.getSearchResultsPage());
+
 		// render pagination buttons
 		PaginationView.render(model.state.search);
 	} catch (error) {
@@ -67,12 +71,40 @@ const controlSearchResults = async () => {
 	}
 };
 
+const controlPagination = pageNum => {
+	// update search results
+	SearchResultsView.render(model.getSearchResultsPage(pageNum));
+	// render pagination btns
+	PaginationView.render(model.state.search);
+};
+
+const controlServings = newServings => {
+	// update the recipe servings (in state)
+	model.updateServings(newServings);
+
+	// update the recipe view
+	RecipeView.render(model.state.recipe);
+};
+
+const controlBookmarks = () => {
+	if (!model.state.recipe.isBookmarked) {
+		model.addBookmark(model.state.recipe);
+	} else {
+		model.removeBookmark(model.state.recipe.id);
+	}
+	RecipeView.render(model.state.recipe);
+};
+
 /**
  * Initialise App
  */
 const init = () => {
-	RecipeView.addEventHandler(controlRecipes);
-	SearchBarView.addEventHandler(controlSearchResults);
+	RecipeView.addLoadHandler(controlRecipes);
+	RecipeView.addUpdateServingsHandler(controlServings);
+	RecipeView.addBookmarkEventHandler(controlBookmarks);
+
+	SearchBarView.addSubmitHandler(controlSearchResults);
+	PaginationView.addClickHandler(controlPagination);
 };
 
 init();

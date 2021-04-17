@@ -454,7 +454,7 @@ var _viewsPaginationViewJs = require('./views/paginationView.js');
 var _viewsPaginationViewJsDefault = _parcelHelpers.interopDefault(_viewsPaginationViewJs);
 require('core-js/stable');
 require('regenerator-runtime/runtime');
-/** Parcel's hot reloading*/
+// /** Parcel's hot reloading */
 // if (module.hot) {
 // module.hot.accept();
 // }
@@ -462,9 +462,7 @@ const recipeContainer = document.querySelector('.recipe');
 // https://forkify-api.herokuapp.com/v2
 // API key - 3834d9e4-f43c-4a35-8b05-42aefc1f6f96
 // /////////////////////////////////////
-/**
-* Show the recipe
-*/
+/** Show the recipe*/
 const controlRecipes = async () => {
   try {
     // get recipe ID
@@ -474,14 +472,15 @@ const controlRecipes = async () => {
     _viewsRecipeViewJsDefault.default.renderSpinner();
     // loading recipe
     await _modelJs.loadRecipe(recipeID);
-    const {recipe} = _modelJs.state;
     // render recipe
     _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+    console.debug(_modelJs.state.recipe);
   } catch (err) {
     _viewsRecipeViewJsDefault.default.renderErrorMsg();
     console.error(err.message);
   }
 };
+/** Display search results*/
 const controlSearchResults = async () => {
   try {
     const searchQuery = _viewsSearchBarViewJsDefault.default._getSearchQuery();
@@ -493,6 +492,8 @@ const controlSearchResults = async () => {
     if (_modelJs.state.search.results.length <= 0) {
       throw Error('No recipes found for that query.');
     }
+    // reset page number on new search
+    _modelJs.state.search.currentPage = 1;
     // render results
     _viewsSearchResultsViewJsDefault.default.render(_modelJs.getSearchResultsPage());
     // render pagination buttons
@@ -502,12 +503,35 @@ const controlSearchResults = async () => {
     console.error(error);
   }
 };
+const controlPagination = pageNum => {
+  // update search results
+  _viewsSearchResultsViewJsDefault.default.render(_modelJs.getSearchResultsPage(pageNum));
+  // render pagination btns
+  _viewsPaginationViewJsDefault.default.render(_modelJs.state.search);
+};
+const controlServings = newServings => {
+  // update the recipe servings (in state)
+  _modelJs.updateServings(newServings);
+  // update the recipe view
+  _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+};
+const controlBookmarks = () => {
+  if (!_modelJs.state.recipe.isBookmarked) {
+    _modelJs.addBookmark(_modelJs.state.recipe);
+  } else {
+    _modelJs.removeBookmark(_modelJs.state.recipe.id);
+  }
+  _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+};
 /**
 * Initialise App
 */
 const init = () => {
-  _viewsRecipeViewJsDefault.default.addEventHandler(controlRecipes);
-  _viewsSearchBarViewJsDefault.default.addEventHandler(controlSearchResults);
+  _viewsRecipeViewJsDefault.default.addLoadHandler(controlRecipes);
+  _viewsRecipeViewJsDefault.default.addUpdateServingsHandler(controlServings);
+  _viewsRecipeViewJsDefault.default.addBookmarkEventHandler(controlBookmarks);
+  _viewsSearchBarViewJsDefault.default.addSubmitHandler(controlSearchResults);
+  _viewsPaginationViewJsDefault.default.addClickHandler(controlPagination);
 };
 init();
 
@@ -525,6 +549,15 @@ _parcelHelpers.export(exports, "loadSearchResults", function () {
 });
 _parcelHelpers.export(exports, "getSearchResultsPage", function () {
   return getSearchResultsPage;
+});
+_parcelHelpers.export(exports, "updateServings", function () {
+  return updateServings;
+});
+_parcelHelpers.export(exports, "addBookmark", function () {
+  return addBookmark;
+});
+_parcelHelpers.export(exports, "removeBookmark", function () {
+  return removeBookmark;
 });
 var _configJs = require('./config.js');
 var _helpersJs = require('./helpers.js');
@@ -545,6 +578,12 @@ const loadRecipe = async function (recipeID) {
   } catch (error) {
     throw Error(error);
   }
+  // if current recipe is bookmark, load with bookmark icon
+  if (state.bookmarks.some(bookmark => bookmark.id === recipeID)) {
+    state.recipe.isBookmarked = true;
+  } else {
+    state.recipe.isBookmarked = false;
+  }
 };
 const loadSearchResults = async searchQuery => {
   try {
@@ -563,6 +602,26 @@ const getSearchResultsPage = (pageNum = state.search.currentPage) => {
   const startIndex = (pageNum - 1) * _configJs.RESULTS_PER_PAGE;
   const endIndex = pageNum * _configJs.RESULTS_PER_PAGE;
   return state.search.results.slice(startIndex, endIndex);
+};
+const updateServings = newServings => {
+  state.recipe.ingredients.forEach(ing => {
+    if (!ing.quantity) return;
+    ing.quantity = ing.quantity * newServings / state.recipe.servings;
+  });
+  state.recipe.servings = newServings;
+};
+const addBookmark = recipe => {
+  state.bookmarks.push(recipe);
+  // mark recipe as bookmarked if === current recipe
+  if (recipe.id === state.recipe.id) state.recipe.isBookmarked = true;
+};
+const removeBookmark = id => {
+  // remove bookmark
+  const recipeIndex = state.bookmarks.findIndex(bookmark => bookmark.id === id);
+  state.bookmarks.splice(recipeIndex, 1);
+  console.debug('bookmarks', state.bookmarks);
+  // mark current recipe as unbookmarked
+  if (id === state.recipe.id) state.recipe.isBookmarked = false;
 };
 
 },{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"6pr2F":[function(require,module,exports) {
@@ -687,10 +746,10 @@ class RecipeView extends _ViewJsDefault.default {
                     <span class="recipe__info-text">servings</span>
 
                     <div class="recipe__info-buttons">
-                        <button class="btn--tiny btn--increase-servings">
+                        <button class="btn--tiny btn--decrease-servings" data-update="${+this._data.servings - 1}">
                             <i class="fas fa-minus-circle"></i>
                         </button>
-                        <button class="btn--tiny btn--increase-servings">
+                        <button class="btn--tiny btn--increase-servings" data-update="${+this._data.servings + 1}">
                             <i class="fas fa-plus-circle"></i>
                         </button>
                     </div>
@@ -699,8 +758,8 @@ class RecipeView extends _ViewJsDefault.default {
                 <div class="recipe__user-generated">
                     
                 </div>
-                <button class="btn--round">
-                    <i class="fas fa-bookmark"></i>
+                <button class="btn--round bookmark-btn">
+                    <i class="${this._data.isBookmarked ? 'fas' : 'far'} fa-bookmark"></i>
                 </button>
             </div>
 
@@ -730,9 +789,28 @@ class RecipeView extends _ViewJsDefault.default {
         </div>
         </div> `;
   }
-  addEventHandler(handler) {
+  /** onhashchange and onload event listener*/
+  addLoadHandler(handler) {
     // event listeners
     ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+  }
+  /** Handle updating of servings*/
+  addUpdateServingsHandler(handler) {
+    this._parentElement.addEventListener('click', e => {
+      const targetBtn = e.target.closest('.btn--tiny');
+      if (!targetBtn) return;
+      // prevent decreasing servings past 1
+      if (targetBtn.dataset.update <= 0) return;
+      handler(targetBtn.dataset.update);
+    });
+  }
+  /** Handle bookmarking*/
+  addBookmarkEventHandler(handler) {
+    this._parentElement.addEventListener('click', e => {
+      const bookmarkBtn = e.target.closest('.bookmark-btn');
+      if (!bookmarkBtn) return;
+      handler();
+    });
   }
   _generateIngredientMarkup(ingredient) {
     return `
@@ -1220,7 +1298,7 @@ class SearchBarView {
   _getSearchQuery() {
     return this._parentElement.querySelector('.search__field').value;
   }
-  addEventHandler(handler) {
+  addSubmitHandler(handler) {
     this._parentElement.addEventListener('submit', e => {
       e.preventDefault();
       handler();
@@ -1265,7 +1343,6 @@ var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 var _ViewJs = require('./View.js');
 var _ViewJsDefault = _parcelHelpers.interopDefault(_ViewJs);
-require('../model.js');
 var _configJs = require('../config.js');
 class PaginationView extends _ViewJsDefault.default {
   constructor(...args) {
@@ -1275,25 +1352,50 @@ class PaginationView extends _ViewJsDefault.default {
   _generateMarkup() {
     // get number of pages
     const numPages = Math.ceil(this._data.results.length / _configJs.RESULTS_PER_PAGE);
+    const currentPage = this._data.currentPage;
     // if on page 1 and there are other pages
-    if (this._data.currentPage === 1 && numPages > 1) {
-      return `other pages`;
+    if (currentPage === 1 && numPages > 1) {
+      return `
+				<button class="btn--inline pagination__btn--next" data-goto="${currentPage + 1}">
+					<span>Next</span>
+					<i class="fas fa-arrow-circle-right"></i>
+				</button> `;
     }
     // if on last page
-    if (this._data.currentPage === numPages) {
-      return `on last page`;
+    if (currentPage === numPages && numPages > 1) {
+      return `
+				<button class="btn--inline pagination__btn--prev" data-goto="${currentPage - 1}">
+					<i class="fas fa-arrow-circle-left"></i>
+					<span>Back</span>
+				</button>`;
     }
     // if on any other page
-    if (this._data.currentPage < numPages) {
-      return `any other page`;
+    if (currentPage < numPages) {
+      return `
+				<button class="btn--inline pagination__btn--prev" data-goto="${currentPage - 1}">
+					<i class="fas fa-arrow-circle-left"></i>
+					<span>Back</span>
+				</button>
+				<button class="btn--inline pagination__btn--next" data-goto="${currentPage + 1}">
+					<span>Next</span>
+					<i class="fas fa-arrow-circle-right"></i>
+				</button> `;
     }
     // if on page 1 and there are no other pages
-    return `one page only`;
+    return ``;
+  }
+  addClickHandler(handler) {
+    this._parentElement.addEventListener('click', function (event) {
+      const targetBtn = event.target.closest('button');
+      if (!targetBtn) return;
+      const gotoPage = +targetBtn.dataset.goto;
+      handler(gotoPage);
+    });
   }
 }
 exports.default = new PaginationView();
 
-},{"./View.js":"48jhP","../model.js":"1hp6y","../config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1PFvP":[function(require,module,exports) {
+},{"./View.js":"48jhP","../config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1PFvP":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');

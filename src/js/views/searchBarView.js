@@ -5,7 +5,7 @@ class SearchBarView {
 		return this._parentElement.querySelector('.search__field').value;
 	}
 
-	addEventHandler(handler) {
+	addSubmitHandler(handler) {
 		this._parentElement.addEventListener('submit', e => {
 			e.preventDefault();
 			handler();

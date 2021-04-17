@@ -4,6 +4,6 @@ forkify-flowchart-part-2.png
 forkify-flowchart-part-3.png
 
 
-src/img/logo.ai
+src/img/*.ai
 .parcel-cache
 node_modules

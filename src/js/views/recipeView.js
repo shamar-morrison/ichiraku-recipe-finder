@@ -30,10 +30,10 @@ class RecipeView extends View {
                     <span class="recipe__info-text">servings</span>
 
                     <div class="recipe__info-buttons">
-                        <button class="btn--tiny btn--increase-servings">
+                        <button class="btn--tiny btn--decrease-servings" data-update="${+this._data.servings - 1}">
                             <i class="fas fa-minus-circle"></i>
                         </button>
-                        <button class="btn--tiny btn--increase-servings">
+                        <button class="btn--tiny btn--increase-servings" data-update="${+this._data.servings + 1}">
                             <i class="fas fa-plus-circle"></i>
                         </button>
                     </div>
@@ -42,8 +42,8 @@ class RecipeView extends View {
                 <div class="recipe__user-generated">
                     
                 </div>
-                <button class="btn--round">
-                    <i class="fas fa-bookmark"></i>
+                <button class="btn--round bookmark-btn">
+                    <i class="${this._data.isBookmarked ? 'fas' : 'far'} fa-bookmark"></i>
                 </button>
             </div>
 
@@ -74,9 +74,30 @@ class RecipeView extends View {
         </div> `;
 	}
 
-	addEventHandler(handler) {
+	/** onhashchange and onload event listener */
+	addLoadHandler(handler) {
 		// event listeners
 		['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+	}
+
+	/** Handle updating of servings */
+	addUpdateServingsHandler(handler) {
+		this._parentElement.addEventListener('click', e => {
+			const targetBtn = e.target.closest('.btn--tiny');
+			if (!targetBtn) return;
+			// prevent decreasing servings past 1
+			if (targetBtn.dataset.update <= 0) return;
+			handler(targetBtn.dataset.update);
+		});
+	}
+
+	/** Handle bookmarking */
+	addBookmarkEventHandler(handler) {
+		this._parentElement.addEventListener('click', e => {
+			const bookmarkBtn = e.target.closest('.bookmark-btn');
+			if (!bookmarkBtn) return;
+			handler();
+		});
 	}
 
 	_generateIngredientMarkup(ingredient) {
