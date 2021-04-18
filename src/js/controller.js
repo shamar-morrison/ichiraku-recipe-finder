@@ -3,6 +3,7 @@ import RecipeView from './views/recipeView.js';
 import SearchBarView from './views/searchBarView.js';
 import SearchResultsView from './views/searchResultsView.js';
 import PaginationView from './views/paginationView.js';
+import BookmarksView from './views/bookmarksView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -87,12 +88,22 @@ const controlServings = newServings => {
 };
 
 const controlBookmarks = () => {
+	// Add/remove bookmarks
 	if (!model.state.recipe.isBookmarked) {
 		model.addBookmark(model.state.recipe);
 	} else {
 		model.removeBookmark(model.state.recipe.id);
 	}
+	// update recipe view
 	RecipeView.render(model.state.recipe);
+
+	// render empty message if no bookmarks
+	if (!model.state.bookmarks.length) {
+		BookmarksView.renderErrorMsg('No bookmarks. Find recipes you love and bookmark them');
+		return;
+	}
+	// render bookmarks
+	BookmarksView.render(model.state.bookmarks);
 };
 
 /**

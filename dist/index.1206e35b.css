@@ -53,7 +53,7 @@ body {
 
 .btn--small, .btn--small:link, .btn--small:visited, .btn {
   background-color: #fdbfc2;
-  border-radius: 1rem;
+  border-radius: 500px;
   border: none;
   text-transform: uppercase;
   color: #fff;
@@ -138,10 +138,8 @@ body {
 .btn--round:focus {
   outline: none;
 }
-.btn--round svg {
-  height: 2.5rem;
-  width: 2.5rem;
-  fill: #fff;
+.btn--round:active i {
+  transform: scale(1);
 }
 .btn--round i {
   color: #fff;
@@ -167,7 +165,7 @@ body {
   transform: scale(1.2);
 }
 .btn--tiny:active i {
-  transform: scale(1.2);
+  transform: scale(1);
 }
 .btn--tiny:not(:last-child) {
   margin-right: 1rem;
@@ -255,7 +253,7 @@ body {
 
 .search {
   background-color: #fff;
-  border-radius: 1rem;
+  border-radius: 500px;
   display: flex;
   align-items: center;
   padding-left: 3rem;
@@ -347,7 +345,7 @@ body {
   z-index: 10;
   width: 40rem;
   background-color: #fff;
-  box-shadow: 0 0.8rem 5rem 2rem rgba(53, 45, 72, 0.1);
+  box-shadow: 0px 9px 32px -29px #a58199;
   visibility: hidden;
   opacity: 0;
   transition: all 0.5s 0.2s;

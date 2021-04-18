@@ -452,6 +452,8 @@ var _viewsSearchResultsViewJs = require('./views/searchResultsView.js');
 var _viewsSearchResultsViewJsDefault = _parcelHelpers.interopDefault(_viewsSearchResultsViewJs);
 var _viewsPaginationViewJs = require('./views/paginationView.js');
 var _viewsPaginationViewJsDefault = _parcelHelpers.interopDefault(_viewsPaginationViewJs);
+var _viewsBookmarksViewJs = require('./views/bookmarksView.js');
+var _viewsBookmarksViewJsDefault = _parcelHelpers.interopDefault(_viewsBookmarksViewJs);
 require('core-js/stable');
 require('regenerator-runtime/runtime');
 // /** Parcel's hot reloading */
@@ -516,12 +518,21 @@ const controlServings = newServings => {
   _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
 };
 const controlBookmarks = () => {
+  // Add/remove bookmarks
   if (!_modelJs.state.recipe.isBookmarked) {
     _modelJs.addBookmark(_modelJs.state.recipe);
   } else {
     _modelJs.removeBookmark(_modelJs.state.recipe.id);
   }
+  // update recipe view
   _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+  // render empty message if no bookmarks
+  if (!_modelJs.state.bookmarks.length) {
+    _viewsBookmarksViewJsDefault.default.renderErrorMsg('No bookmarks. Find recipes you love and bookmark them');
+    return;
+  }
+  // render bookmarks
+  _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
 };
 /**
 * Initialise App
@@ -535,7 +546,7 @@ const init = () => {
 };
 init();
 
-},{"./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj","./views/searchResultsView.js":"37EIh","./views/paginationView.js":"5u5Fw","core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1hp6y":[function(require,module,exports) {
+},{"./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj","./views/searchResultsView.js":"37EIh","./views/paginationView.js":"5u5Fw","./views/bookmarksView.js":"2EbNZ","core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1hp6y":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "state", function () {
@@ -610,18 +621,23 @@ const updateServings = newServings => {
   });
   state.recipe.servings = newServings;
 };
+/** Save bookmarks to localStorage*/
+const saveBookmarks = () => {
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+};
 const addBookmark = recipe => {
   state.bookmarks.push(recipe);
   // mark recipe as bookmarked if === current recipe
   if (recipe.id === state.recipe.id) state.recipe.isBookmarked = true;
+  saveBookmarks();
 };
 const removeBookmark = id => {
   // remove bookmark
   const recipeIndex = state.bookmarks.findIndex(bookmark => bookmark.id === id);
   state.bookmarks.splice(recipeIndex, 1);
-  console.debug('bookmarks', state.bookmarks);
   // mark current recipe as unbookmarked
   if (id === state.recipe.id) state.recipe.isBookmarked = false;
+  saveBookmarks();
 };
 
 },{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"6pr2F":[function(require,module,exports) {
@@ -831,9 +847,7 @@ var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 const loadingGif = require('url:../../img/loading.gif');
 class View {
-  /**
-  * Render the recipe/search results/pagination btns
-  */
+  /** Render the recipe/search results/pagination btns*/
   render(data) {
     this._data = data;
     const markupHTML = this._generateMarkup();
@@ -843,9 +857,7 @@ class View {
   _clear() {
     this._parentElement.innerHTML = '';
   }
-  /**
-  * Render the loading GIF
-  */
+  /** Render the loading GIF*/
   renderSpinner() {
     const spinner = `
 		<div class="spinner">
@@ -854,9 +866,7 @@ class View {
     this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', spinner);
   }
-  /**
-  * Render an error message
-  */
+  /** Render an error message*/
   renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
     const errorMsg = `
         <div class="error">
@@ -1321,9 +1331,10 @@ class SearchResultsView extends _ViewJsDefault.default {
     return this._data.map(obj => this._generatePreviewMarkup(obj)).join('');
   }
   _generatePreviewMarkup(data) {
+    const id = window.location.hash.slice(1);
     return `
       <li class="preview">
-              <a class="preview__link" href="#${data.id}">
+              <a class="preview__link ${this._data.id === id ? 'preview__link--active' : ''}" href="#${data.id}">
                 <figure class="preview__fig">
                   <img src="${data.image_url}" alt="${data.title}" />
                 </figure>
@@ -1395,7 +1406,38 @@ class PaginationView extends _ViewJsDefault.default {
 }
 exports.default = new PaginationView();
 
-},{"./View.js":"48jhP","../config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1PFvP":[function(require,module,exports) {
+},{"./View.js":"48jhP","../config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"2EbNZ":[function(require,module,exports) {
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+var _ViewJs = require('./View.js');
+var _ViewJsDefault = _parcelHelpers.interopDefault(_ViewJs);
+class BookmarksView extends _ViewJsDefault.default {
+  constructor(...args) {
+    var _temp;
+    return (_temp = super(...args), this._parentElement = document.querySelector('.bookmarks__list'), _temp);
+  }
+  _generateMarkup() {
+    return this._data.map(obj => this._generatePreviewMarkup(obj)).join('');
+  }
+  _generatePreviewMarkup(data) {
+    return `
+      <li class="preview">
+              <a class="preview__link" href="#${data.id}">
+                <figure class="preview__fig">
+                  <img src="${data.image_url}" alt="${data.title}" />
+                </figure>
+                  <div class="preview__data">
+                    <h4 class="preview__title">${data.title}</h4>
+                    <p class="preview__publisher">${data.publisher}</p>
+                  </div>
+              </a>
+        </li>
+	  `;
+  }
+}
+exports.default = new BookmarksView();
+
+},{"./View.js":"48jhP","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1PFvP":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');

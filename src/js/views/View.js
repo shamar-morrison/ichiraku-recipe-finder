@@ -3,9 +3,7 @@ const loadingGif = require('url:../../img/loading.gif');
 export default class View {
 	_data;
 
-	/**
-	 * Render the recipe/search results/pagination btns
-	 */
+	/** Render the recipe/search results/pagination btns */
 	render(data) {
 		this._data = data;
 		const markupHTML = this._generateMarkup();
@@ -18,9 +16,7 @@ export default class View {
 		this._parentElement.innerHTML = '';
 	}
 
-	/**
-	 * Render the loading GIF
-	 */
+	/** Render the loading GIF*/
 	renderSpinner() {
 		const spinner = `
 		<div class="spinner">
@@ -30,9 +26,7 @@ export default class View {
 		this._parentElement.insertAdjacentHTML('afterbegin', spinner);
 	}
 
-	/**
-	 * Render an error message
-	 */
+	/** Render an error message*/
 	renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
 		const errorMsg = `
         <div class="error">

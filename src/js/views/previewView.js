@@ -1,18 +1,12 @@
 import View from './View.js';
 
-class SearchResultsView extends View {
-	_parentElement = document.querySelector('.results');
+class PreviewView extends View {
+	_parentElement = '';
 
-	_generateMarkup() {
-		return this._data.map(obj => this._generatePreviewMarkup(obj)).join('');
-	}
-
-	_generatePreviewMarkup(data) {
-		const id = window.location.hash.slice(1);
-
+	_generateMarkup(data) {
 		return `
       <li class="preview">
-              <a class="preview__link ${this._data.id === id ? 'preview__link--active' : ''}" href="#${data.id}">
+              <a class="preview__link" href="#${data.id}">
                 <figure class="preview__fig">
                   <img src="${data.image_url}" alt="${data.title}" />
                 </figure>
@@ -26,4 +20,4 @@ class SearchResultsView extends View {
 	}
 }
 
-export default new SearchResultsView();
+export default new PreviewView();

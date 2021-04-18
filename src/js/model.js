@@ -1,6 +1,7 @@
 import * as config from './config.js';
 import { getJSON } from './helpers.js';
 
+/** Application state */
 export const state = {
 	recipe: {},
 	search: {
@@ -19,7 +20,6 @@ export const loadRecipe = async function (recipeID) {
 		state.recipe = recipe;
 	} catch (error) {
 		throw Error(error);
-		// console.error(error.message);
 	}
 
 	// if current recipe is bookmark, load with bookmark icon
@@ -63,12 +63,18 @@ export const updateServings = newServings => {
 	state.recipe.servings = newServings;
 };
 
+/** Save bookmarks to localStorage */
+const saveBookmarks = () => {
+	localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+};
+
 /** Add recipe to bookmarks */
 export const addBookmark = recipe => {
 	state.bookmarks.push(recipe);
 
 	// mark recipe as bookmarked if === current recipe
 	if (recipe.id === state.recipe.id) state.recipe.isBookmarked = true;
+	saveBookmarks();
 };
 
 /** Remove recipe from bookmarks */
@@ -76,8 +82,8 @@ export const removeBookmark = id => {
 	// remove bookmark
 	const recipeIndex = state.bookmarks.findIndex(bookmark => bookmark.id === id);
 	state.bookmarks.splice(recipeIndex, 1);
-	console.debug('bookmarks', state.bookmarks);
 
 	// mark current recipe as unbookmarked
 	if (id === state.recipe.id) state.recipe.isBookmarked = false;
+	saveBookmarks();
 };
