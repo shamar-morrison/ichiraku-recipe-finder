@@ -639,6 +639,11 @@ const removeBookmark = id => {
   if (id === state.recipe.id) state.recipe.isBookmarked = false;
   saveBookmarks();
 };
+const init = () => {
+  const storage = localStorage.getItem('bookmarks');
+  if (storage) state.bookmarks = JSON.parse(storage);
+};
+init();
 
 },{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"6pr2F":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");

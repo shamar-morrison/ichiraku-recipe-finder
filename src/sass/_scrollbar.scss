@@ -1,0 +1,22 @@
+// CUSTOM SCROLL BARS (does not work on Firefox)
+
+::-webkit-scrollbar {
+	width: 6px;
+}
+::-webkit-scrollbar-track {
+	background: #e8e8e8;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #fb5496;
+}
+::-webkit-scrollbar-thumb {
+	background-image: -webkit-linear-gradient(45deg, #ffbd84, #ff1f8e);
+	background-image: -o-linear-gradient(45deg, #ffbd84, #ff1f8e);
+	background-image: linear-gradient(45deg, #ffbd84, #ff1f8e);
+}
+::-moz-selection {
+	background: rgba(166, 175, 189, 0.3);
+}
+::selection {
+	background: rgba(166, 175, 189, 0.3);
+}
