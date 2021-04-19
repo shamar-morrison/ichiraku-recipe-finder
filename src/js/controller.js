@@ -4,6 +4,7 @@ import SearchBarView from './views/searchBarView.js';
 import SearchResultsView from './views/searchResultsView.js';
 import PaginationView from './views/paginationView.js';
 import BookmarksView from './views/bookmarksView.js';
+import AddRecipeView from './views/addRecipeView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -113,6 +114,9 @@ const init = () => {
 	RecipeView.addLoadHandler(controlRecipes);
 	RecipeView.addUpdateServingsHandler(controlServings);
 	RecipeView.addBookmarkEventHandler(controlBookmarks);
+
+	// render bookmarks on initial page load
+	if (model.state.bookmarks.length > 0) BookmarksView.render(model.state.bookmarks);
 
 	SearchBarView.addSubmitHandler(controlSearchResults);
 	PaginationView.addClickHandler(controlPagination);

@@ -89,6 +89,7 @@ export const removeBookmark = id => {
 };
 
 const init = () => {
+	// get bookmarks from localStorage
 	const storage = localStorage.getItem('bookmarks');
 	if (storage) state.bookmarks = JSON.parse(storage);
 };

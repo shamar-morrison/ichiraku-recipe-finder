@@ -51,6 +51,14 @@ body {
   }
 }
 
+.btn--small, .btn--small:link, .btn--small:visited, .btn,
+.btn--inline,
+.btn--round,
+.btn--tiny,
+i {
+  transition: transform 1s cubic-bezier(0.17, 0.85, 0.438, 0.99);
+}
+
 .btn--small, .btn--small:link, .btn--small:visited, .btn {
   background-color: #fdbfc2;
   border-radius: 500px;
@@ -60,7 +68,6 @@ body {
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: all 0.2s;
 }
 .btn--small:hover, .btn:hover {
   transform: scale(1.05);
@@ -77,22 +84,12 @@ body {
   font-size: 1.5rem;
   font-weight: 600;
 }
-.btn svg {
-  height: 2.25rem;
-  width: 2.25rem;
-  fill: currentColor;
-}
 
 .btn--small, .btn--small:link, .btn--small:visited {
   font-size: 1.4rem;
   font-weight: 600;
   padding: 1.25rem 2.25rem;
   text-decoration: none;
-}
-.btn--small svg, .btn--small:link svg, .btn--small:visited svg {
-  height: 1.75rem;
-  width: 1.75rem;
-  fill: currentColor;
 }
 
 .btn--inline {
@@ -106,7 +103,6 @@ body {
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: all 0.2s;
 }
 .btn--inline span {
   font-family: "Poppins", sans-serif;
@@ -127,7 +123,6 @@ body {
   cursor: pointer;
   height: 4.5rem;
   width: 4.5rem;
-  transition: all 0.2s cubic-bezier(0.17, 0.85, 0.438, 0.99);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,7 +134,7 @@ body {
   outline: none;
 }
 .btn--round:active i {
-  transform: scale(1);
+  transform: scale(1.07);
 }
 .btn--round i {
   color: #fff;
@@ -156,7 +151,6 @@ body {
 .btn--tiny i {
   font-size: 2.2rem;
   color: #fa9140;
-  transition: all 0.3s cubic-bezier(0.17, 0.85, 0.438, 0.99);
 }
 .btn--tiny:focus {
   outline: none;
@@ -318,13 +312,6 @@ body {
   display: flex;
   align-items: center;
 }
-.nav__btn svg {
-  height: 2.4rem;
-  width: 2.4rem;
-  fill: #fa9140;
-  margin-right: 0.7rem;
-  transform: translateY(-1px);
-}
 .nav__btn i {
   font-size: 2.1rem;
   color: #fa9140;
@@ -345,7 +332,7 @@ body {
   z-index: 10;
   width: 40rem;
   background-color: #fff;
-  box-shadow: 0px 9px 32px -29px #a58199;
+  box-shadow: -12px 3px 22px -34px rgba(0, 0, 0, 0.42), 1px 8px 18px -14px rgba(160, 165, 154, 0.33);
   visibility: hidden;
   opacity: 0;
   transition: all 0.5s 0.2s;
@@ -719,6 +706,7 @@ body {
 .upload__btn {
   grid-column: 1/-1;
   justify-self: center;
+  background-color: #fa9140;
 }
 
 ::-webkit-scrollbar {
