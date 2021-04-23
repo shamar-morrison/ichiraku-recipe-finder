@@ -443,6 +443,7 @@ id) /*: string*/
 
 },{}],"3miIZ":[function(require,module,exports) {
 var _modelJs = require('./model.js');
+var _configJs = require('./config.js');
 var _viewsRecipeViewJs = require('./views/recipeView.js');
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 var _viewsRecipeViewJsDefault = _parcelHelpers.interopDefault(_viewsRecipeViewJs);
@@ -454,7 +455,8 @@ var _viewsPaginationViewJs = require('./views/paginationView.js');
 var _viewsPaginationViewJsDefault = _parcelHelpers.interopDefault(_viewsPaginationViewJs);
 var _viewsBookmarksViewJs = require('./views/bookmarksView.js');
 var _viewsBookmarksViewJsDefault = _parcelHelpers.interopDefault(_viewsBookmarksViewJs);
-require('./views/addRecipeView.js');
+var _viewsAddRecipeViewJs = require('./views/addRecipeView.js');
+var _viewsAddRecipeViewJsDefault = _parcelHelpers.interopDefault(_viewsAddRecipeViewJs);
 require('core-js/stable');
 require('regenerator-runtime/runtime');
 // /** Parcel's hot reloading */
@@ -463,7 +465,6 @@ require('regenerator-runtime/runtime');
 // }
 const recipeContainer = document.querySelector('.recipe');
 // https://forkify-api.herokuapp.com/v2
-// API key - 3834d9e4-f43c-4a35-8b05-42aefc1f6f96
 // /////////////////////////////////////
 /** Show the recipe*/
 const controlRecipes = async () => {
@@ -535,6 +536,28 @@ const controlBookmarks = () => {
   // render bookmarks
   _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
 };
+const controlAddRecipe = async newRecipe => {
+  try {
+    _viewsAddRecipeViewJsDefault.default.renderSpinner();
+    await _modelJs.uploadRecipe(newRecipe);
+    // render recipe
+    _viewsRecipeViewJsDefault.default.render(_modelJs.state.recipe);
+    // show success message
+    _viewsAddRecipeViewJsDefault.default.renderMsg();
+    // render bookmarks
+    _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
+    // model.state.bookmarks = [];
+    // change recipe ID in URL
+    window.history.pushState(null, '', `#${_modelJs.state.recipe.id}`);
+    // hide upload recipe form
+    setTimeout(() => {
+      _viewsAddRecipeViewJsDefault.default.toggleUploadModal();
+    }, _configJs.MODAL_CLOSE);
+  } catch (err) {
+    console.error(err.message);
+    _viewsAddRecipeViewJsDefault.default.renderErrorMsg(err.message);
+  }
+};
 /**
 * Initialise App
 */
@@ -542,6 +565,7 @@ const init = () => {
   _viewsRecipeViewJsDefault.default.addLoadHandler(controlRecipes);
   _viewsRecipeViewJsDefault.default.addUpdateServingsHandler(controlServings);
   _viewsRecipeViewJsDefault.default.addBookmarkEventHandler(controlBookmarks);
+  _viewsAddRecipeViewJsDefault.default.addHandlerUploadRecipe(controlAddRecipe);
   // render bookmarks on initial page load
   if (_modelJs.state.bookmarks.length > 0) _viewsBookmarksViewJsDefault.default.render(_modelJs.state.bookmarks);
   _viewsSearchBarViewJsDefault.default.addSubmitHandler(controlSearchResults);
@@ -549,7 +573,7 @@ const init = () => {
 };
 init();
 
-},{"./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj","./views/searchResultsView.js":"37EIh","./views/paginationView.js":"5u5Fw","./views/bookmarksView.js":"2EbNZ","core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y","./views/addRecipeView.js":"4ieaQ"}],"1hp6y":[function(require,module,exports) {
+},{"./model.js":"1hp6y","./config.js":"6pr2F","./views/recipeView.js":"9e6b9","./views/searchBarView.js":"5MFvj","./views/searchResultsView.js":"37EIh","./views/paginationView.js":"5u5Fw","./views/bookmarksView.js":"2EbNZ","./views/addRecipeView.js":"4ieaQ","core-js/stable":"1PFvP","regenerator-runtime/runtime":"62Qib","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"1hp6y":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "state", function () {
@@ -573,8 +597,12 @@ _parcelHelpers.export(exports, "addBookmark", function () {
 _parcelHelpers.export(exports, "removeBookmark", function () {
   return removeBookmark;
 });
+_parcelHelpers.export(exports, "uploadRecipe", function () {
+  return uploadRecipe;
+});
 var _configJs = require('./config.js');
 var _helpersJs = require('./helpers.js');
+require('./views/addRecipeView.js');
 const state = {
   recipe: {},
   search: {
@@ -586,7 +614,7 @@ const state = {
 };
 const loadRecipe = async function (recipeID) {
   try {
-    const data = await _helpersJs.getJSON(`${_configJs.API_URL}/${recipeID}`);
+    const data = await _helpersJs.getJSON(`${_configJs.API_URL}/${recipeID}?key=${_configJs.API_KEY}`);
     const {recipe} = data.data;
     state.recipe = recipe;
   } catch (error) {
@@ -601,12 +629,11 @@ const loadRecipe = async function (recipeID) {
 };
 const loadSearchResults = async searchQuery => {
   try {
-    const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${searchQuery}`);
+    const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${searchQuery}&key=${_configJs.API_KEY}`);
     const searchResults = data.data.recipes;
     // set state
     state.search.results = searchResults;
     state.search.query = searchQuery;
-    console.debug('results', searchResults);
   } catch (error) {
     throw error;
   }
@@ -642,18 +669,50 @@ const removeBookmark = id => {
   if (id === state.recipe.id) state.recipe.isBookmarked = false;
   saveBookmarks();
 };
-const init = () => {
+const uploadRecipe = async recipeData => {
+  try {
+    const ingredients = Object.entries(recipeData).// filter ingredients from recipeData
+    filter(el => el[0].startsWith('ingredient') && el[1] !== '').map(ing => {
+      const [quantity, unit, description] = ing[1].split(',').map(el => el.trim());
+      return {
+        quantity: isNaN(quantity) ? null : +quantity,
+        unit: unit ? unit : '',
+        description: description ? description : ''
+      };
+    });
+    const recipe = {
+      title: recipeData.title,
+      source_url: recipeData.sourceUrl,
+      image_url: recipeData.image,
+      publisher: recipeData.publisher,
+      cooking_time: +recipeData.cookingTime,
+      servings: +recipeData.servings,
+      ingredients
+    };
+    const data = await _helpersJs.sendJSON(`${_configJs.API_URL}?key=${_configJs.API_KEY}`, recipe);
+    data.data.recipe.isBookmarked = true;
+    state.recipe = data.data.recipe;
+    // add created recipe to bookmarks
+    addBookmark(state.recipe);
+  } catch (err) {
+    console.error('uploadRecipe()', err);
+  }
+};
+const initModel = () => {
   // get bookmarks from localStorage
   const storage = localStorage.getItem('bookmarks');
   if (storage) state.bookmarks = JSON.parse(storage);
 };
-init();
+initModel();
 
-},{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"6pr2F":[function(require,module,exports) {
+},{"./config.js":"6pr2F","./helpers.js":"581KF","./views/addRecipeView.js":"4ieaQ","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"6pr2F":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "API_URL", function () {
   return API_URL;
+});
+_parcelHelpers.export(exports, "API_KEY", function () {
+  return API_KEY;
 });
 _parcelHelpers.export(exports, "TIMEOUT_SEC", function () {
   return TIMEOUT_SEC;
@@ -661,9 +720,14 @@ _parcelHelpers.export(exports, "TIMEOUT_SEC", function () {
 _parcelHelpers.export(exports, "RESULTS_PER_PAGE", function () {
   return RESULTS_PER_PAGE;
 });
+_parcelHelpers.export(exports, "MODAL_CLOSE", function () {
+  return MODAL_CLOSE;
+});
 const API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes';
+const API_KEY = `44100f2b-644f-4da1-8a20-606b9779a83d`;
 const TIMEOUT_SEC = 10;
 const RESULTS_PER_PAGE = 10;
+const MODAL_CLOSE = 2500;
 
 },{"@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"5gA8y":[function(require,module,exports) {
 "use strict";
@@ -713,6 +777,9 @@ _parcelHelpers.defineInteropFlag(exports);
 _parcelHelpers.export(exports, "getJSON", function () {
   return getJSON;
 });
+_parcelHelpers.export(exports, "sendJSON", function () {
+  return sendJSON;
+});
 var _configJs = require('./config.js');
 const timeout = function (s) {
   return new Promise(function (_, reject) {
@@ -725,7 +792,6 @@ const getJSON = async function (url) {
   try {
     // Fetch recipe data from API
     const res = await Promise.race([fetch(url), timeout(_configJs.TIMEOUT_SEC)]);
-    // const res = await fetch(url);
     if (!res.ok) throw new Error('No recipes found for that query. Please try again.');
     const data = await res.json();
     return data;
@@ -733,8 +799,164 @@ const getJSON = async function (url) {
     throw err;
   }
 };
+const sendJSON = async function (url, recipeData) {
+  try {
+    const fetchPro = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(recipeData)
+    });
+    const res = await Promise.race([fetchPro, timeout(_configJs.TIMEOUT_SEC)]);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message, res.status);
+    return data;
+  } catch (err) {
+    throw err;
+  }
+};
 
-},{"./config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"9e6b9":[function(require,module,exports) {
+},{"./config.js":"6pr2F","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"4ieaQ":[function(require,module,exports) {
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+var _ViewJs = require('./View.js');
+var _ViewJsDefault = _parcelHelpers.interopDefault(_ViewJs);
+class AddRecipeView extends _ViewJsDefault.default {
+  constructor() {
+    super();
+    this._parentElement = document.querySelector('.upload');
+    this._message = 'Recipe was successfully uploaded.';
+    this._btnAddRecipe = document.querySelector('.nav__btn--add-recipe');
+    this._addRecipeModal = document.querySelector('.add-recipe-window');
+    this._modalOverlay = document.querySelector('.overlay');
+    this._btnCloseModal = document.querySelector('.btn--close-modal');
+    this._addHandlerToggleModal();
+  }
+  /***/
+  addHandlerUploadRecipe(handler) {
+    this._parentElement.addEventListener('submit', e => {
+      e.preventDefault();
+      const dataArr = [...new FormData(this._parentElement)];
+      const uploadRecipeData = Object.fromEntries(dataArr);
+      console.debug('uploadRecipeData()', uploadRecipeData);
+      handler(uploadRecipeData);
+    });
+  }
+  _generateMarkup() {}
+  /***/
+  toggleUploadModal() {
+    this._modalOverlay.classList.toggle('hidden');
+    this._addRecipeModal.classList.toggle('hidden');
+  }
+  _addHandlerToggleModal() {
+    this._btnAddRecipe.addEventListener('click', this.toggleUploadModal.bind(this));
+    this._btnCloseModal.addEventListener('click', this.toggleUploadModal.bind(this));
+    this._modalOverlay.addEventListener('click', this.toggleUploadModal.bind(this));
+  }
+}
+exports.default = new AddRecipeView();
+
+},{"./View.js":"48jhP","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"48jhP":[function(require,module,exports) {
+var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
+_parcelHelpers.defineInteropFlag(exports);
+const loadingGif = require('url:../../img/loading.gif');
+class View {
+  /** Render the recipe/search results/pagination btns*/
+  render(data) {
+    this._data = data;
+    const markupHTML = this._generateMarkup();
+    this._clear();
+    this._parentElement.insertAdjacentHTML('beforeend', markupHTML);
+  }
+  _clear() {
+    this._parentElement.innerHTML = '';
+  }
+  /** Render the loading GIF*/
+  renderSpinner() {
+    const spinner = `
+		<div class="spinner">
+          <img src="${loadingGif}" alt="loading..." srcset="${loadingGif}" class="loading-gif">
+        </div> `;
+    this._clear();
+    this._parentElement.insertAdjacentHTML('afterbegin', spinner);
+  }
+  /** Render an error message*/
+  renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
+    const errorMsg = `
+        <div class="error">
+            <div>
+              <i class="fas fa-exclamation-circle"></i>
+              <p>${message}</p>
+            </div>
+        </div> `;
+    this._clear();
+    this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
+  }
+  /** Render a message*/
+  renderMsg(message = this._message) {
+    const msg = `
+        <div class="message">
+            <div>
+              <i class="fas fa-check-circle"></i>
+              <p>${message}</p>
+            </div>
+        </div> `;
+    this._clear();
+    this._parentElement.insertAdjacentHTML('afterbegin', msg);
+  }
+}
+exports.default = View;
+
+},{"url:../../img/loading.gif":"7n5qy","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"7n5qy":[function(require,module,exports) {
+module.exports = require('./bundle-url').getBundleURL() + "loading.231fcd1f.gif"
+},{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
+"use strict";
+
+/* globals document:readonly */
+var bundleURL = null;
+
+function getBundleURLCached() {
+  if (!bundleURL) {
+    bundleURL = getBundleURL();
+  }
+
+  return bundleURL;
+}
+
+function getBundleURL() {
+  try {
+    throw new Error();
+  } catch (err) {
+    var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
+
+    if (matches) {
+      return getBaseURL(matches[0]);
+    }
+  }
+
+  return '/';
+}
+
+function getBaseURL(url) {
+  return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+
+
+function getOrigin(url) {
+  let matches = ('' + url).match(/(https?|file|ftp):\/\/[^/]+/);
+
+  if (!matches) {
+    throw new Error('Origin not found');
+  }
+
+  return matches[0];
+}
+
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+},{}],"9e6b9":[function(require,module,exports) {
 var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
 _parcelHelpers.defineInteropFlag(exports);
 var _ViewJs = require('./View.js');
@@ -780,8 +1002,8 @@ class RecipeView extends _ViewJsDefault.default {
                     </div>
                 </div>
 
-                <div class="recipe__user-generated">
-                    
+                <div class="recipe__user-generated ${this._data.key ? '' : 'hidden'}">
+                    <i class="fas fa-user"></i>
                 </div>
                 <button class="btn--round bookmark-btn">
                     <i class="${this._data.isBookmarked ? 'fas' : 'far'} fa-bookmark"></i>
@@ -851,94 +1073,7 @@ class RecipeView extends _ViewJsDefault.default {
 }
 exports.default = new RecipeView();
 
-},{"./View.js":"48jhP","fractional":"5jzJt","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"48jhP":[function(require,module,exports) {
-var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
-_parcelHelpers.defineInteropFlag(exports);
-const loadingGif = require('url:../../img/loading.gif');
-class View {
-  /** Render the recipe/search results/pagination btns*/
-  render(data) {
-    this._data = data;
-    const markupHTML = this._generateMarkup();
-    this._clear();
-    this._parentElement.insertAdjacentHTML('beforeend', markupHTML);
-  }
-  _clear() {
-    this._parentElement.innerHTML = '';
-  }
-  /** Render the loading GIF*/
-  renderSpinner() {
-    const spinner = `
-		<div class="spinner">
-          <img src="${loadingGif}" alt="loading..." srcset="${loadingGif}" class="loading-gif">
-        </div> `;
-    this._clear();
-    this._parentElement.insertAdjacentHTML('afterbegin', spinner);
-  }
-  /** Render an error message*/
-  renderErrorMsg(message = `No recipe found. Please try another recipe.`) {
-    const errorMsg = `
-        <div class="error">
-            <div>
-              <i class="fas fa-exclamation-circle"></i>
-              <p>${message}</p>
-            </div>
-        </div> `;
-    this._clear();
-    this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
-  }
-}
-exports.default = View;
-
-},{"url:../../img/loading.gif":"7n5qy","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"7n5qy":[function(require,module,exports) {
-module.exports = require('./bundle-url').getBundleURL() + "loading.231fcd1f.gif"
-},{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
-"use strict";
-
-/* globals document:readonly */
-var bundleURL = null;
-
-function getBundleURLCached() {
-  if (!bundleURL) {
-    bundleURL = getBundleURL();
-  }
-
-  return bundleURL;
-}
-
-function getBundleURL() {
-  try {
-    throw new Error();
-  } catch (err) {
-    var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
-
-    if (matches) {
-      return getBaseURL(matches[0]);
-    }
-  }
-
-  return '/';
-}
-
-function getBaseURL(url) {
-  return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-
-
-function getOrigin(url) {
-  let matches = ('' + url).match(/(https?|file|ftp):\/\/[^/]+/);
-
-  if (!matches) {
-    throw new Error('Origin not found');
-  }
-
-  return matches[0];
-}
-
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-},{}],"5jzJt":[function(require,module,exports) {
+},{"./View.js":"48jhP","fractional":"5jzJt","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}],"5jzJt":[function(require,module,exports) {
 /*
 fraction.js
 A Javascript fraction library.
@@ -1342,7 +1477,7 @@ class SearchResultsView extends _ViewJsDefault.default {
   _generatePreviewMarkup(data) {
     const id = window.location.hash.slice(1);
     return `
-      <li class="preview">
+        <li class="preview">
               <a class="preview__link ${this._data.id === id ? 'preview__link--active' : ''}" href="#${data.id}">
                 <figure class="preview__fig">
                   <img src="${data.image_url}" alt="${data.title}" />
@@ -1350,6 +1485,9 @@ class SearchResultsView extends _ViewJsDefault.default {
                   <div class="preview__data">
                     <h4 class="preview__title">${data.title}</h4>
                     <p class="preview__publisher">${data.publisher}</p>
+                    <div class="recipe__user-generated ${data.key ? '' : 'hidden'}">
+                      <i class="fas fa-user"></i>
+                    </div>
                   </div>
               </a>
         </li>
@@ -13356,42 +13494,6 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],"4ieaQ":[function(require,module,exports) {
-var _parcelHelpers = require("@parcel/transformer-js/lib/esmodule-helpers.js");
-_parcelHelpers.defineInteropFlag(exports);
-var _ViewJs = require('./View.js');
-var _ViewJsDefault = _parcelHelpers.interopDefault(_ViewJs);
-class AddRecipeView extends _ViewJsDefault.default {
-  constructor() {
-    super();
-    this._parentElement = document.querySelector('.upload');
-    this._btnAddRecipe = document.querySelector('.nav__btn--add-recipe');
-    this._addRecipeModal = document.querySelector('.add-recipe-window');
-    this._modalOverlay = document.querySelector('.overlay');
-    this._btnCloseModal = document.querySelector('.btn--close-modal');
-    this._addHandlerToggleModal();
-  }
-  /***/
-  _addHandlerUpload() {
-    this._parentElement.addEventListener('submit', e => {
-      e.preventDefault();
-      const uploadRecipeData = [...new FormData(this._parentElement)];
-    });
-  }
-  _generateMarkup() {}
-  /***/
-  _toggleHiddenClass() {
-    this._modalOverlay.classList.toggle('hidden');
-    this._addRecipeModal.classList.toggle('hidden');
-  }
-  _addHandlerToggleModal() {
-    this._btnAddRecipe.addEventListener('click', this._toggleHiddenClass.bind(this));
-    this._btnCloseModal.addEventListener('click', this._toggleHiddenClass.bind(this));
-    this._modalOverlay.addEventListener('click', this._toggleHiddenClass.bind(this));
-  }
-}
-exports.default = new AddRecipeView();
-
-},{"./View.js":"48jhP","@parcel/transformer-js/lib/esmodule-helpers.js":"5gA8y"}]},["7BONy","3miIZ"], "3miIZ", "parcelRequirea0c0")
+},{}]},["7BONy","3miIZ"], "3miIZ", "parcelRequirea0c0")
 
 //# sourceMappingURL=index.250b04c7.js.map

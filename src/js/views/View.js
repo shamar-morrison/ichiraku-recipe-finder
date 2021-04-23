@@ -38,4 +38,17 @@ export default class View {
 		this._clear();
 		this._parentElement.insertAdjacentHTML('afterbegin', errorMsg);
 	}
+
+	/** Render a message*/
+	renderMsg(message = this._message) {
+		const msg = `
+        <div class="message">
+            <div>
+              <i class="fas fa-check-circle"></i>
+              <p>${message}</p>
+            </div>
+        </div> `;
+		this._clear();
+		this._parentElement.insertAdjacentHTML('afterbegin', msg);
+	}
 }

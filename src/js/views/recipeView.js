@@ -39,8 +39,8 @@ class RecipeView extends View {
                     </div>
                 </div>
 
-                <div class="recipe__user-generated">
-                    
+                <div class="recipe__user-generated ${this._data.key ? '' : 'hidden'}">
+                    <i class="fas fa-user"></i>
                 </div>
                 <button class="btn--round bookmark-btn">
                     <i class="${this._data.isBookmarked ? 'fas' : 'far'} fa-bookmark"></i>

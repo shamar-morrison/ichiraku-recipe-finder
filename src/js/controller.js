@@ -1,4 +1,5 @@
 import * as model from './model.js';
+import * as config from './config.js';
 import RecipeView from './views/recipeView.js';
 import SearchBarView from './views/searchBarView.js';
 import SearchResultsView from './views/searchResultsView.js';
@@ -17,7 +18,6 @@ import 'regenerator-runtime/runtime';
 const recipeContainer = document.querySelector('.recipe');
 
 // https://forkify-api.herokuapp.com/v2
-// API key - 3834d9e4-f43c-4a35-8b05-42aefc1f6f96
 
 ///////////////////////////////////////
 
@@ -107,6 +107,35 @@ const controlBookmarks = () => {
 	BookmarksView.render(model.state.bookmarks);
 };
 
+const controlAddRecipe = async newRecipe => {
+	try {
+		AddRecipeView.renderSpinner();
+
+		await model.uploadRecipe(newRecipe);
+
+		// render recipe
+		RecipeView.render(model.state.recipe);
+
+		// show success message
+		AddRecipeView.renderMsg();
+
+		// render bookmarks
+		BookmarksView.render(model.state.bookmarks);
+		// model.state.bookmarks = [];
+
+		// change recipe ID in URL
+		window.history.pushState(null, '', `#${model.state.recipe.id}`);
+
+		// hide upload recipe form
+		setTimeout(() => {
+			AddRecipeView.toggleUploadModal();
+		}, config.MODAL_CLOSE);
+	} catch (err) {
+		console.error(err.message);
+		AddRecipeView.renderErrorMsg(err.message);
+	}
+};
+
 /**
  * Initialise App
  */
@@ -114,6 +143,7 @@ const init = () => {
 	RecipeView.addLoadHandler(controlRecipes);
 	RecipeView.addUpdateServingsHandler(controlServings);
 	RecipeView.addBookmarkEventHandler(controlBookmarks);
+	AddRecipeView.addHandlerUploadRecipe(controlAddRecipe);
 
 	// render bookmarks on initial page load
 	if (model.state.bookmarks.length > 0) BookmarksView.render(model.state.bookmarks);

@@ -1,5 +1,6 @@
 import * as config from './config.js';
-import { getJSON } from './helpers.js';
+import { getJSON, sendJSON } from './helpers.js';
+import addRecipeView from './views/addRecipeView.js';
 
 /** Application state */
 export const state = {
@@ -15,7 +16,7 @@ export const state = {
 /** Load the selected recipe */
 export const loadRecipe = async function (recipeID) {
 	try {
-		const data = await getJSON(`${config.API_URL}/${recipeID}`);
+		const data = await getJSON(`${config.API_URL}/${recipeID}?key=${config.API_KEY}`);
 		const { recipe } = data.data;
 		state.recipe = recipe;
 	} catch (error) {
@@ -33,13 +34,12 @@ export const loadRecipe = async function (recipeID) {
 /** Load the search results */
 export const loadSearchResults = async searchQuery => {
 	try {
-		const data = await getJSON(`${config.API_URL}?search=${searchQuery}`);
+		const data = await getJSON(`${config.API_URL}?search=${searchQuery}&key=${config.API_KEY}`);
 		const searchResults = data.data.recipes;
 
 		// set state
 		state.search.results = searchResults;
 		state.search.query = searchQuery;
-		console.debug('results', searchResults);
 	} catch (error) {
 		throw error;
 	}
@@ -88,10 +88,45 @@ export const removeBookmark = id => {
 	saveBookmarks();
 };
 
-const init = () => {
+export const uploadRecipe = async recipeData => {
+	try {
+		const ingredients = Object.entries(recipeData)
+			// filter ingredients from recipeData
+			.filter(el => el[0].startsWith('ingredient') && el[1] !== '')
+			.map(ing => {
+				const [quantity, unit, description] = ing[1].split(',').map(el => el.trim());
+				return {
+					quantity: isNaN(quantity) ? null : +quantity,
+					unit: unit ? unit : '',
+					description: description ? description : '',
+				};
+			});
+
+		const recipe = {
+			title: recipeData.title,
+			source_url: recipeData.sourceUrl,
+			image_url: recipeData.image,
+			publisher: recipeData.publisher,
+			cooking_time: +recipeData.cookingTime,
+			servings: +recipeData.servings,
+			ingredients,
+		};
+
+		const data = await sendJSON(`${config.API_URL}?key=${config.API_KEY}`, recipe);
+		data.data.recipe.isBookmarked = true;
+		state.recipe = data.data.recipe;
+
+		// add created recipe to bookmarks
+		addBookmark(state.recipe);
+	} catch (err) {
+		console.error('uploadRecipe()', err);
+	}
+};
+
+const initModel = () => {
 	// get bookmarks from localStorage
 	const storage = localStorage.getItem('bookmarks');
 	if (storage) state.bookmarks = JSON.parse(storage);
 };
 
-init();
+initModel();
